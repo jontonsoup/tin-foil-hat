@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"flag"
 	"fmt"
 	"log"
@@ -8,7 +9,9 @@ import (
 	"net"
 	"net/http"
 	"net/rpc"
+	"os"
 	"time"
+	"strings"
 )
 
 import (
@@ -60,4 +63,30 @@ func main() {
 	log.Printf("ping msgID: %s\n", ping.MsgID.AsString())
 	log.Printf("pong msgID: %s\n", pong.MsgID.AsString())
 
+	r := bufio.NewReader(os.Stdin)
+	for {
+		line, err := r.ReadString('\n')
+		if err != nil {
+			fmt.Println(err)
+		} 
+		err = runCommand(kadem, line)
+		if err != nil {
+			fmt.Println(err)
+		}
+	}
+}
+
+func runCommand(k *kademlia.Kademlia, s string) (err error) {
+	fields := strings.Fields(s)
+	if len(fields) == 0 {
+		return nil
+	}
+	err = nil
+	switch fields[0] {
+	case "get_node_id":
+		fmt.Printf("OK: %v\n",k.NodeID)
+	default:
+		fmt.Println("Unrecognized command",fields[0])
+	}
+	return
 }
