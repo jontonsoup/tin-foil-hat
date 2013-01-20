@@ -1,3 +1,21 @@
+# Idiomatic Project Structure
+
+## Working on this project
+
+- `cd $GOPATH/src`. If `src` doesn't exist, mkdir it. Consult http://golang.org/doc/code.html#tmp_2 for details about how you should organize your projects.
+- `git clone git@github.com:maxsnew/kademlia-go.git`
+
+## Building and Running
+
+- `cd $GOPATH/kademlia-go`
+- `go build kademlia-go/kademlia` to build the kademlia package.
+- `go run kdht/main.go` to compile and run the binary.
+- `go install kademlia/kdht` to install the binary. Then, you can run it via `$GOPATH/bin/kdht`, or just `kdht` if `$GOPATH/bin` is in your `PATH`.
+
+
+
+## TA's notes follow...
+
 ************
 * BUILDING *
 ************

@@ -10,12 +10,12 @@ import (
 	"net/http"
 	"net/rpc"
 	"os"
-	"time"
 	"strings"
+	"time"
 )
 
 import (
-	"kademlia"
+	"kademlia-go/kademlia"
 )
 
 func main() {
@@ -68,7 +68,7 @@ func main() {
 		line, err := r.ReadString('\n')
 		if err != nil {
 			fmt.Println(err)
-		} 
+		}
 		err = runCommand(kadem, line)
 		if err != nil {
 			fmt.Println(err)
@@ -84,9 +84,9 @@ func runCommand(k *kademlia.Kademlia, s string) (err error) {
 	err = nil
 	switch fields[0] {
 	case "get_node_id":
-		fmt.Printf("OK: %v\n",k.NodeID)
+		fmt.Printf("OK: %v\n", k.NodeID)
 	default:
-		fmt.Println("Unrecognized command",fields[0])
+		fmt.Println("Unrecognized command", fields[0])
 	}
 	return
 }
