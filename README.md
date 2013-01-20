@@ -10,12 +10,13 @@
 - `cd $GOPATH/kademlia-go`
 - `go build kademlia-go/kademlia` to build the kademlia package.
 - `go run kdht/main.go` to compile and run the binary.
-- `go install kademlia/kdht` to install the binary. Then, you can run it via `$GOPATH/bin/kdht`, or just `kdht` if `$GOPATH/bin` is in your `PATH`.
+- `go install kademlia-go/kdht` to install the binary. Then, you can run it via `$GOPATH/bin/kdht`, or just `kdht` if `$GOPATH/bin` is in your `PATH`.
 
 
 
 ## TA's notes follow...
 
+```
 ************
 * BUILDING *
 ************
@@ -82,4 +83,4 @@ get_local_value key
         Printf("OK: %v\n", theAppropriateData)
     If your node does not have data for the given key, you should
         Printf("ERR\n")
-
+```
