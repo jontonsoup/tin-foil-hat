@@ -53,7 +53,7 @@ func main() {
 		log.Fatal("DialHTTP: ", err)
 	}
 	ping := new(kademlia.Ping)
-	ping.MsgID = kademlia.NewRandomID()
+	ping.MsgID = kadem.NodeID
 	var pong kademlia.Pong
 	err = client.Call("Kademlia.Ping", ping, &pong)
 	if err != nil {
@@ -84,7 +84,7 @@ func runCommand(k *kademlia.Kademlia, s string) (err error) {
 	err = nil
 	switch fields[0] {
 	case "get_node_id":
-		fmt.Printf("OK: %v\n", k.NodeID)
+		fmt.Printf("OK: %s\n", k.NodeID.AsString())
 	default:
 		fmt.Println("Unrecognized command", fields[0])
 	}

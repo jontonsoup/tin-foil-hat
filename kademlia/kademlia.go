@@ -10,5 +10,7 @@ type Kademlia struct {
 
 func NewKademlia() *Kademlia {
 	// TODO: Assign yourself a random ID and prepare other state here.
-	return new(Kademlia)
+	k := new(Kademlia)
+	k.NodeID = NewRandomID()
+	return k
 }
