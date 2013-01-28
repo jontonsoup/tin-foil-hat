@@ -1,11 +1,25 @@
 package kademlia
 
+import "container/list"
+
 // Contains the core kademlia type. In addition to core state, this type serves
 // as a receiver for the RPC methods, which is required by that package.
 
 // Core Kademlia type. You can put whatever state you want in this.
 type Kademlia struct {
-	NodeID ID
+	NodeID  ID
+	Buckets list.List
+}
+
+// a simple list to implement a k-bucket
+type Bucket struct {
+	Contacts list.List
+}
+
+type Contact struct {
+	NodeID    string
+	IPAddress string
+	Port      string
 }
 
 func NewKademlia() *Kademlia {
