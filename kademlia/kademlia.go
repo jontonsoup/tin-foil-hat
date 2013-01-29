@@ -16,12 +16,6 @@ type Bucket struct {
 	Contacts list.List
 }
 
-type Contact struct {
-	NodeID    string
-	IPAddress string
-	Port      string
-}
-
 func NewKademlia() *Kademlia {
 	// TODO: Assign yourself a random ID and prepare other state here.
 	k := new(Kademlia)

@@ -4,9 +4,19 @@ package kademlia
 // strictly to these to be compatible with the reference implementation and
 // other groups' code.
 
+import "net"
+
+// Host identification.
+type Contact struct {
+	NodeID ID
+	Host   net.IP
+	Port   uint16
+}
+
 // PING
 type Ping struct {
-	MsgID ID
+	Sender Contact
+	MsgID  ID
 }
 
 type Pong struct {
@@ -21,9 +31,10 @@ func (k *Kademlia) Ping(ping Ping, pong *Pong) error {
 
 // STORE
 type StoreRequest struct {
-	MsgID ID
-	Key   ID
-	Value []byte
+	Sender Contact
+	MsgID  ID
+	Key    ID
+	Value  []byte
 }
 
 type StoreResult struct {
@@ -38,6 +49,7 @@ func (k *Kademlia) Store(req StoreRequest, res *StoreResult) error {
 
 // FIND_NODE
 type FindNodeRequest struct {
+	Sender Contact
 	MsgID  ID
 	NodeID ID
 }
@@ -61,8 +73,9 @@ func (k *Kademlia) FindNode(req FindNodeRequest, res *FindNodeResult) error {
 
 // FIND_VALUE
 type FindValueRequest struct {
-	MsgID ID
-	Key   ID
+	Sender Contact
+	MsgID  ID
+	Key    ID
 }
 
 // If Value is nil, it should be ignored, and Nodes means the same as in a
