@@ -31,7 +31,7 @@ func ExampleIndex() {
 	k := NewKademlia()
 	k.NodeID = HalfHalfID()
 	other := OnesID()
-	index := k.Index(other)
+	index := k.index(other)
 	fmt.Println(index)
 	// Output:
 	// 80
@@ -51,7 +51,7 @@ func TestAddContact(t *testing.T) {
 	index := k.Index(c.NodeID)
 	k.Buckets[index] = *b
 	// add contact
-	k.AddContact(c)
+	k.addContact(c)
 	if k.Buckets[index].Contacts.Len() == 0 {
 		t.Fail()
 	}
