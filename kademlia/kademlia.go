@@ -23,7 +23,14 @@ func NewKademlia() *Kademlia {
 	return k
 }
 
-func (k Kademlia) Index(id ID) int {
+func (k *Kademlia) Index(id ID) int {
 	// convert ID into index for Kademlia.Buckets array
 	return k.NodeID.Xor(id).PrefixLen()
+}
+
+func (k *Kademlia) AddContact(c *Contact) {
+	index := k.Index(c.NodeID)
+	bucket := &k.Buckets[index]
+	bucket.Contacts.PushBack(c)
+	return
 }
