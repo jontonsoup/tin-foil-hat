@@ -8,7 +8,7 @@ import "container/list"
 // Core Kademlia type. You can put whatever state you want in this.
 type Kademlia struct {
 	NodeID  ID
-	Buckets list.List
+	Buckets [IDBytes * 8]Bucket
 }
 
 // a simple list to implement a k-bucket
@@ -21,4 +21,9 @@ func NewKademlia() *Kademlia {
 	k := new(Kademlia)
 	k.NodeID = NewRandomID()
 	return k
+}
+
+func (k Kademlia) Index(id ID) int {
+	// convert ID into index for Kademlia.Buckets array
+	return k.NodeID.Xor(id).PrefixLen()
 }

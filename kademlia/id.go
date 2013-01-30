@@ -69,6 +69,25 @@ func NewRandomID() (ret ID) {
 	return
 }
 
+// Generate a new ID of ones.
+func OnesID() (ret ID) {
+	for i := 0; i < IDBytes; i++ {
+		ret[i] = uint8(1)
+	}
+	return
+}
+
+// Generate a new ID of ones.
+func HalfHalfID() (ret ID) {
+	for i := 0; i < IDBytes/2; i++ {
+		ret[i] = uint8(1)
+	}
+	for i := (IDBytes/2 + 1); i < IDBytes; i++ {
+		ret[i] = uint8(0)
+	}
+	return
+}
+
 // Generate an ID identical to another.
 func CopyID(id ID) (ret ID) {
 	for i := 0; i < IDBytes; i++ {

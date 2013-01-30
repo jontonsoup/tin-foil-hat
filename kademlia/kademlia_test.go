@@ -26,3 +26,13 @@ func TestBucket(*testing.T) {
 	// b := new(Bucket)
 	// fmt.Println(b)
 }
+
+func ExampleIndex() {
+	k := NewKademlia()
+	k.NodeID = HalfHalfID()
+	other := OnesID()
+	index := k.Index(other)
+	fmt.Println(index)
+	// Output:
+	// 80
+}
