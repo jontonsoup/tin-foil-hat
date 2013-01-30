@@ -48,7 +48,7 @@ func TestAddContact(t *testing.T) {
 	k.NodeID = HalfHalfID()
 	// add a bucket at the right place
 	b := new(Bucket)
-	index := k.Index(c.NodeID)
+	index := k.index(c.NodeID)
 	k.Buckets[index] = *b
 	// add contact
 	k.addContact(c)
