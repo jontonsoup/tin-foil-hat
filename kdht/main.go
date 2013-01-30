@@ -86,15 +86,21 @@ func runCommand(k *kademlia.Kademlia, s string) (err error) {
 	case "get_node_id":
 		fmt.Printf("OK: %s\n", k.NodeID.AsString())
 	case "ping":
-		client, err := rpc.DialHTTP("tcp", fields[1])
-		if err != nil {
-			log.Fatal("DialHTTP: ", err)
+		localhostfmt := strings.Contains(fields[1], ":")
+		if localhostfmt {
+			client, err := rpc.DialHTTP("tcp", fields[1])
+			if err != nil {
+				log.Fatal("DialHTTP: ", err)
+			}
+			ping := new(kademlia.Ping)
+			ping.MsgID = k.NodeID
+			var pong kademlia.Pong
+			err = client.Call("Kademlia.Ping", ping, &pong)
+			log.Printf("pong msgID: %s\n", pong.MsgID.AsString())
+		} else {
+			fmt.Println("other")
 		}
-		ping := new(kademlia.Ping)
-		ping.MsgID = k.NodeID
-		var pong kademlia.Pong
-		err = client.Call("Kademlia.Ping", ping, &pong)
-		log.Printf("pong msgID: %s\n", pong.MsgID.AsString())
+
 	default:
 		fmt.Println("Unrecognized command", fields[0])
 	}
