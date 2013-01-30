@@ -1,21 +1,21 @@
 package main
 
 import (
-"bufio"
-"flag"
-"fmt"
-"log"
-"math/rand"
-"net"
-"net/http"
-"net/rpc"
-"os"
-"strings"
-"time"
+	"bufio"
+	"flag"
+	"fmt"
+	"log"
+	"math/rand"
+	"net"
+	"net/http"
+	"net/rpc"
+	"os"
+	"strings"
+	"time"
 )
 
 import (
-"kademlia-go/kademlia"
+	"kademlia-go/kademlia"
 )
 
 func main() {
