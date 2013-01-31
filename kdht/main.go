@@ -50,19 +50,7 @@ func main() {
 	// Your code should loop forever, reading instructions from stdin and
 	// printing their results to stdout. See README.txt for more details.
 	pong, err := kademlia.SendPing(kadem, firstPeerStr)
-	// client, err := rpc.DialHTTP("tcp", firstPeerStr)
-	// if err != nil {
-	// 	log.Fatal("DialHTTP: ", err)
-	// }
-	// ping := new(kademlia.Ping)
-	// ping.MsgID = kadem.NodeID
-	// var pong kademlia.Pong
-	// err = client.Call("Kademlia.Ping", ping, &pong)
-	// if err != nil {
-	// 	log.Fatal("Call: ", err)
-	// }
 
-	// log.Printf("ping msgID: %s\n", ping.MsgID.AsString())
 	log.Printf("pong msgID: %s\n", pong.MsgID.AsString())
 
 	r := bufio.NewReader(os.Stdin)
