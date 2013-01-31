@@ -1,6 +1,9 @@
 package kademlia
 
-import "container/list"
+import (
+	"log"
+	"net"
+)
 
 // Contains the core kademlia type. In addition to core state, this type serves
 // as a receiver for the RPC methods, which is required by that package.
@@ -9,17 +12,23 @@ import "container/list"
 type Kademlia struct {
 	NodeID  ID
 	Buckets [IDBytes * 8]Bucket
+	Self    Contact
 }
 
-// a simple list to implement a k-bucket
-type Bucket struct {
-	Contacts list.List
+func NewKademlia(address string) *Kademlia {
+	// TODO: Assign yourself a random ID and prepare other state here.
+	ip, port, err := parseAddress(address)
+	if err != nil {
+		log.Fatal("bad address")
+	}
+	return newKademliaSplitAddress(ip, port)
 }
 
-func NewKademlia() *Kademlia {
+func newKademliaSplitAddress(ip net.IP, port uint16) *Kademlia {
 	// TODO: Assign yourself a random ID and prepare other state here.
 	k := new(Kademlia)
 	k.NodeID = NewRandomID()
+	k.Self = Contact{k.NodeID, ip, port}
 	return k
 }
 
@@ -28,9 +37,19 @@ func (k *Kademlia) index(id ID) int {
 	return k.NodeID.Xor(id).PrefixLen()
 }
 
+func LookupContact(k *Kademlia, id ID) (c *Contact, ok bool) {
+	index := k.index(id)
+	if index >= len(k.Buckets) {
+		ok = false
+		return
+	}
+	bucket := &k.Buckets[index]
+	c, ok = bucket.lookupContact(id)
+	return
+}
+
 func (k *Kademlia) addContact(c *Contact) {
 	index := k.index(c.NodeID)
 	bucket := &k.Buckets[index]
-	bucket.Contacts.PushBack(c)
-	return
+	bucket.updateContact(c)
 }

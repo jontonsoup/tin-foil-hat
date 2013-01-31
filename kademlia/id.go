@@ -4,6 +4,7 @@ package kademlia
 
 import (
 	"encoding/hex"
+	"errors"
 	"math/rand"
 )
 
@@ -100,6 +101,11 @@ func CopyID(id ID) (ret ID) {
 func FromString(idstr string) (ret ID, err error) {
 	bytes, err := hex.DecodeString(idstr)
 	if err != nil {
+		return
+	}
+
+	if len(bytes) < IDBytes {
+		err = errors.New("ID string too short")
 		return
 	}
 

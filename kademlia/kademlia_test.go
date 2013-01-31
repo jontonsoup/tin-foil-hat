@@ -12,8 +12,8 @@ func ExampleBucket() {
 	c.Port = 7970
 	c.Host = net.ParseIP("127.0.0.1")
 	b := new(Bucket)
-	b.Contacts.PushBack(c)
-	val := b.Contacts.Back().Value
+	b.contacts.PushBack(c)
+	val := b.contacts.Back().Value
 	cval := val.(*Contact)
 	fmt.Println(cval.Host)
 	fmt.Println(cval.Port)
@@ -28,7 +28,7 @@ func TestBucket(*testing.T) {
 }
 
 func ExampleIndex() {
-	k := NewKademlia()
+	k := NewKademlia("127.0.0.1:8890")
 	k.NodeID = HalfHalfID()
 	other := OnesID()
 	index := k.index(other)
@@ -44,7 +44,7 @@ func TestAddContact(t *testing.T) {
 	c.Port = 7970
 	c.Host = net.ParseIP("127.0.0.1")
 	// create kademlia
-	k := NewKademlia()
+	k := NewKademlia("127.0.0.1:8890")
 	k.NodeID = HalfHalfID()
 	// add a bucket at the right place
 	b := new(Bucket)
@@ -52,8 +52,15 @@ func TestAddContact(t *testing.T) {
 	k.Buckets[index] = *b
 	// add contact
 	k.addContact(c)
-	if k.Buckets[index].Contacts.Len() == 0 {
+	if k.Buckets[index].contacts.Len() == 0 {
+		t.Fail()
+	}
+	if _, ok := LookupContact(k, c.NodeID); !ok {
 		t.Fail()
 	}
 	return
+}
+
+func TestParseAddress(t *testing.T) {
+
 }

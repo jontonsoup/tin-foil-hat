@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"net/rpc"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -33,7 +34,7 @@ func main() {
 	firstPeerStr := args[1]
 
 	fmt.Printf("kademlia starting up!\n")
-	kadem := kademlia.NewKademlia()
+	kadem := kademlia.NewKademlia(listenStr)
 
 	rpc.Register(kadem)
 	rpc.HandleHTTP()
@@ -48,19 +49,20 @@ func main() {
 	// Confirm our server is up with a PING request and then exit.
 	// Your code should loop forever, reading instructions from stdin and
 	// printing their results to stdout. See README.txt for more details.
-	client, err := rpc.DialHTTP("tcp", firstPeerStr)
-	if err != nil {
-		log.Fatal("DialHTTP: ", err)
-	}
-	ping := new(kademlia.Ping)
-	ping.MsgID = kadem.NodeID
-	var pong kademlia.Pong
-	err = client.Call("Kademlia.Ping", ping, &pong)
-	if err != nil {
-		log.Fatal("Call: ", err)
-	}
+	pong, err := kademlia.SendPing(kadem, firstPeerStr)
+	// client, err := rpc.DialHTTP("tcp", firstPeerStr)
+	// if err != nil {
+	// 	log.Fatal("DialHTTP: ", err)
+	// }
+	// ping := new(kademlia.Ping)
+	// ping.MsgID = kadem.NodeID
+	// var pong kademlia.Pong
+	// err = client.Call("Kademlia.Ping", ping, &pong)
+	// if err != nil {
+	// 	log.Fatal("Call: ", err)
+	// }
 
-	log.Printf("ping msgID: %s\n", ping.MsgID.AsString())
+	// log.Printf("ping msgID: %s\n", ping.MsgID.AsString())
 	log.Printf("pong msgID: %s\n", pong.MsgID.AsString())
 
 	r := bufio.NewReader(os.Stdin)
@@ -86,20 +88,35 @@ func runCommand(k *kademlia.Kademlia, s string) (err error) {
 	case "get_node_id":
 		fmt.Printf("OK: %s\n", k.NodeID.AsString())
 	case "ping":
+		var address string
+
+		if len(fields) != 2 {
+			log.Printf("usage: ping [ip:port | NodeID]")
+		}
 		localhostfmt := strings.Contains(fields[1], ":")
 		if localhostfmt {
-			client, err := rpc.DialHTTP("tcp", fields[1])
-			if err != nil {
-				log.Fatal("DialHTTP: ", err)
-			}
-			ping := new(kademlia.Ping)
-			ping.MsgID = k.NodeID
-			var pong kademlia.Pong
-			err = client.Call("Kademlia.Ping", ping, &pong)
-			log.Printf("pong msgID: %s\n", pong.MsgID.AsString())
+			address = fields[1]
 		} else {
-			fmt.Println("other")
+			id, err := kademlia.FromString(fields[1])
+			if err != nil {
+				log.Println("usage: ping [ip:port | NodeID]")
+				return nil
+			}
+			if c, ok := kademlia.LookupContact(k, id); !ok {
+				log.Println("Node not found")
+				return nil
+			} else {
+				log.Println("Found contact ", c)
+				address = c.Host.String() + ":" +
+					strconv.FormatUint(uint64(c.Port), 10)
+			}
+
 		}
+		pong, err := kademlia.SendPing(k, address)
+		if err != nil {
+			return err
+		}
+		log.Printf("pong msgID: %s\n", pong.MsgID.AsString())
 
 	default:
 		fmt.Println("Unrecognized command", fields[0])
