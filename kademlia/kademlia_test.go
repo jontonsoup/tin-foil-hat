@@ -76,14 +76,14 @@ func TestSendPing(t *testing.T) {
 	rpc.Register(kadem)
 	// create an rpc server
 	rpc.HandleHTTP()
-	// start listening at nodeStr
+	// start listening at listenStr
 	l, err := net.Listen("tcp", listenStr)
 	if err != nil {
 		log.Fatal("Listen: ", err)
 	}
 	// start serving
 	go http.Serve(l, nil)
-	// send a ping using server, check response
+	// send a ping to server at listenStr, using nodeStr
 	pong, err := SendPing(kadem, nodeStr)
 	if err != nil {
 		t.Fail()
