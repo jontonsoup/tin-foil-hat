@@ -2,7 +2,10 @@ package kademlia
 
 import (
 	"fmt"
+	"log"
 	"net"
+	"net/http"
+	"net/rpc"
 	"testing"
 )
 
@@ -63,4 +66,29 @@ func TestAddContact(t *testing.T) {
 
 func TestParseAddress(t *testing.T) {
 
+}
+
+func TestSendPing(t *testing.T) {
+	nodeStr := "127.0.0.1:8890"
+	listenStr := "127.0.0.1:8890"
+	// create a kademlia instance, register it
+	kadem := NewKademlia(listenStr)
+	rpc.Register(kadem)
+	// create an rpc server
+	rpc.HandleHTTP()
+	// start listening at nodeStr
+	l, err := net.Listen("tcp", listenStr)
+	if err != nil {
+		log.Fatal("Listen: ", err)
+	}
+	// start serving
+	go http.Serve(l, nil)
+	// send a ping using server, check response
+	pong, err := SendPing(kadem, nodeStr)
+	if err != nil {
+		t.Fail()
+	}
+	if pong.MsgID.AsString() != kadem.Self.NodeID.AsString() {
+		t.Fail()
+	}
 }
