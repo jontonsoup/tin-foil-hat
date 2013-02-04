@@ -16,7 +16,6 @@ type Kademlia struct {
 }
 
 func NewKademlia(address string) *Kademlia {
-	// TODO: Assign yourself a random ID and prepare other state here.
 	ip, port, err := parseAddress(address)
 	if err != nil {
 		log.Fatal("bad address")
@@ -25,7 +24,6 @@ func NewKademlia(address string) *Kademlia {
 }
 
 func newKademliaSplitAddress(ip net.IP, port uint16) *Kademlia {
-	// TODO: Assign yourself a random ID and prepare other state here.
 	k := new(Kademlia)
 	k.NodeID = NewRandomID()
 	k.Self = Contact{k.NodeID, ip, port}

@@ -129,7 +129,6 @@ func (k *Kademlia) FindValue(req FindValueRequest, res *FindValueResult) error {
 }
 
 func parseAddress(address string) (ip net.IP, port uint16, err error) {
-	// TODO: ues net
 	hoststr, portstr, err := net.SplitHostPort(address)
 	if err != nil {
 		return
