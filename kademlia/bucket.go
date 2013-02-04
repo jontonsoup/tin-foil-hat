@@ -9,16 +9,18 @@ import (
  Implements the Kademlia k-bucket type
 */
 
+const MAX_BUCKET_SIZE = 20
+
 // a simple list to implement a k-bucket
 type Bucket struct {
 	contacts list.List
 }
 
 // if a contact with the given id is present, return that contact
-func (b *Bucket) lookupContact(id ID) (c *Contact, ok bool) {
+func (b *Bucket) lookupContact(id ID) (e *list.Element, ok bool) {
 	log.Print("Looking up ", id.AsString())
-	for e := b.contacts.Front(); e != nil; e = e.Next() {
-		c = e.Value.(*Contact)
+	for e = b.contacts.Front(); e != nil; e = e.Next() {
+		c := e.Value.(*Contact)
 		log.Print("Checking: ", c.NodeID.AsString())
 		if c.NodeID.Equals(id) {
 			ok = true
@@ -34,7 +36,27 @@ func (b *Bucket) lookupContact(id ID) (c *Contact, ok bool) {
 // Correctly updates the bucket given that the contact given has just
 // been observed
 func (b *Bucket) updateContact(c *Contact) {
-	// TODO: check to see if the list is full or the contact is
-	// already there
-	b.contacts.PushBack(c)
+	e, ok := b.lookupContact(c.NodeID)
+	if !ok {
+		if b.size() <= MAX_BUCKET_SIZE {
+			log.Print("Adding contact to bucket: ", c.NodeID.AsString())
+			b.contacts.PushBack(c)
+		} else {
+			// TODO: properly update a full bucket. Ping
+			// the first contact in the list
+		}
+	} else {
+		log.Print("Previously seen contact recently seen: ", c.NodeID.AsString())
+		// Move contact to most recently seen in the bucket.
+		b.contacts.MoveToBack(e)
+	}
+}
+
+// Number of contacts in the bucket
+func (b *Bucket) size() (len int) {
+	len = 0
+	for e := b.contacts.Front(); e != nil; e = e.Next() {
+		len += 1
+	}
+	return len
 }

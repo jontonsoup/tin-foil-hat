@@ -51,6 +51,10 @@ func main() {
 	// printing their results to stdout. See README.txt for more details.
 	pong, err := kademlia.SendPing(kadem, firstPeerStr)
 
+	if err != nil {
+		log.Fatal("Initial ping error: ", err)
+	}
+
 	log.Printf("pong msgID: %s\n", pong.MsgID.AsString())
 
 	r := bufio.NewReader(os.Stdin)
