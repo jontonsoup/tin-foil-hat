@@ -38,7 +38,7 @@ func (b *Bucket) lookupContact(id ID) (e *list.Element, ok bool) {
 func (b *Bucket) updateContact(c *Contact) {
 	e, ok := b.lookupContact(c.NodeID)
 	if !ok {
-		if b.size() <= MAX_BUCKET_SIZE {
+		if b.contacts.Len() <= MAX_BUCKET_SIZE {
 			log.Print("Adding contact to bucket: ", c.NodeID.AsString())
 			b.contacts.PushBack(c)
 		} else {
@@ -50,13 +50,4 @@ func (b *Bucket) updateContact(c *Contact) {
 		// Move contact to most recently seen in the bucket.
 		b.contacts.MoveToBack(e)
 	}
-}
-
-// Number of contacts in the bucket
-func (b *Bucket) size() (len int) {
-	len = 0
-	for e := b.contacts.Front(); e != nil; e = e.Next() {
-		len += 1
-	}
-	return len
 }
