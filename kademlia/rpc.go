@@ -30,6 +30,7 @@ type Pong struct {
 
 func SendPing(k *Kademlia, address string) (pong *Pong, err error) {
 	client, err := rpc.DialHTTP("tcp", address)
+	defer client.Close()
 	if err != nil {
 		return
 	}
