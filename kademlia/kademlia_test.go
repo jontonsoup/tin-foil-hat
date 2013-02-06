@@ -92,3 +92,18 @@ func TestSendPing(t *testing.T) {
 		t.Fail()
 	}
 }
+
+func ExampleContactToFoundNode() {
+	c := new(Contact)
+	c.NodeID = OnesID()
+	c.Port = 7970
+	c.Host = net.ParseIP("127.0.0.1")
+	f := contactToFoundNode(c)
+	fmt.Println(f.IPAddr)
+	fmt.Println(f.NodeID)
+	fmt.Println(f.Port)
+	// Output:
+	// 127.0.0.1
+	// [1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1]
+	// 7970
+}

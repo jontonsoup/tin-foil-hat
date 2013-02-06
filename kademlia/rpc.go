@@ -136,3 +136,12 @@ func parseAddress(address string) (ip net.IP, port uint16, err error) {
 	port = uint16(port64)
 	return ip, port, nil
 }
+
+func contactToFoundNode(c *Contact) FoundNode {
+	// create a FoundNode and return it
+	f := new(FoundNode)
+	f.IPAddr = c.Host.String()
+	f.NodeID = c.NodeID
+	f.Port = c.Port
+	return *f
+}
