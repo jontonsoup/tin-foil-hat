@@ -84,6 +84,7 @@ func runCommand(k *kademlia.Kademlia, s string) (err error) {
 
 		if len(fields) != 2 {
 			log.Printf("usage: ping [ip:port | NodeID]")
+			return
 		}
 		localhostfmt := strings.Contains(fields[1], ":")
 		if localhostfmt {
@@ -109,7 +110,24 @@ func runCommand(k *kademlia.Kademlia, s string) (err error) {
 			return err
 		}
 		log.Printf("pong msgID: %s\n", pong.MsgID.AsString())
+	case "find_node":
+		if len(fields) != 2 {
+			log.Printf("usage: find_node key")
+			return
+		}
 
+		id, err := kademlia.FromString(fields[1])
+		if err != nil {
+			log.Printf("Invalid NodeID: ", fields[1])
+			return nil
+		}
+		nodes, err := kademlia.SendFindNode(k, id)
+		if err != nil {
+			return err
+		}
+		for i, node := range nodes {
+			log.Printf("Close node ", i, node.NodeID.AsString())
+		}
 	default:
 		fmt.Println("Unrecognized command", fields[0])
 	}
