@@ -62,6 +62,7 @@ func main() {
 		log.Fatal("Bootstrap find_node error: ", err)
 	}
 
+	log.Printf("Received", len(foundNodes), "nodes")
 	for i, node := range foundNodes {
 		log.Printf("Node ", string(i), ": ", node.NodeID.AsString())
 	}

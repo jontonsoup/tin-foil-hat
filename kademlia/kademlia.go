@@ -59,11 +59,12 @@ func (k *Kademlia) addContact(c *Contact) {
 func (k *Kademlia) indexSearchOrder(id ID) <-chan int {
 	// go a goroutine that sends the correct indices out on the
 	// channel and returns the channel
-
-	return nil
+	indicesChan := make(chan int)
+	go k.produceIndexSearchOrder(id, indicesChan)
+	return indicesChan
 }
 
-func (k *Kademlia) produceIndexSearchOrder(id ID, outChan <-chan int) {
+func (k *Kademlia) produceIndexSearchOrder(id ID, outChan chan<- int) {
 	// produce the indices for the closest k-buckets to the id
-
+	close(outChan)
 }

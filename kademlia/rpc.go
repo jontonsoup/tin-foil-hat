@@ -99,7 +99,26 @@ type FindNodeResult struct {
 func SendFindNode(k *Kademlia, nodeID ID, address string) ([]FoundNode, error) {
 	// TODO
 	// send a findNode rpc and return the k-closest nodes
-	return nil, errors.New("Not Implemented")
+	client, err := rpc.DialHTTP("tcp", address)
+	defer client.Close()
+	if err != nil {
+		return nil, err
+	}
+	msgID := NewRandomID()
+	req := FindNodeRequest{k.Self, msgID, k.NodeID}
+
+	var res *FindNodeResult
+	err = client.Call("Kademlia.FindNode", req, &res)
+	if err != nil {
+		return nil, err
+	}
+	if !res.MsgID.Equals(req.MsgID) {
+		err = errors.New("Response MsgID didn't match request MsgID")
+	} else if res.Err != nil {
+		err = res.Err
+	}
+
+	return res.Nodes, err
 }
 
 func (k *Kademlia) FindNode(req FindNodeRequest, res *FindNodeResult) error {
