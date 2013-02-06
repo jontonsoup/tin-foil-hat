@@ -105,3 +105,28 @@ func ExampleContactToFoundNode() {
 	// [1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1]
 	// 7970
 }
+
+func TestOnesIndices(t *testing.T) {
+	ones := OnesID().OnesIndices()
+	fmt.Println(ones)
+	for i := 0; i < NUM_BUCKETS; i++ {
+		if i%8 == 0 {
+			if !ones[i] {
+				t.Error("SHould be 1:", i)
+			}
+		} else if ones[i] {
+			t.Error("SHould be 0:", i)
+		}
+	}
+
+	zeros := new(ID).OnesIndices()
+	for i := 0; i < NUM_BUCKETS; i++ {
+		if i != NUM_BUCKETS-1 {
+			if zeros[i] {
+				t.Error("SHould be 0:", i)
+			}
+		} else if !zeros[i] {
+			t.Error("Should be 1:", i)
+		}
+	}
+}

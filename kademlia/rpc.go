@@ -128,14 +128,16 @@ func (k *Kademlia) FindNode(req FindNodeRequest, res *FindNodeResult) error {
 	// them in FindNodeResult.Nodes
 	k.addContact(&req.Sender)
 
-	bucketIndexes := k.indexSearchOrder(req.NodeID)
+	bucketIndexes, doneChan := k.indexSearchOrder(req.NodeID)
 
 	for i := range bucketIndexes {
 		// add as many contacts from bucket i as possible,
 		// close nodes first.
-		log.Printf(string(i))
-		// if the slice is full, break
+		log.Printf("Look at bucket", i)
+		// if the slice is full, break and tell doneChan we're done
 	}
+	doneChan <- true
+
 	return nil
 }
 

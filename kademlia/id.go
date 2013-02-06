@@ -62,6 +62,22 @@ func (id ID) PrefixLen() int {
 	return IDBytes * 8
 }
 
+// Generates a map where the indices of the id with 1 are true and 0
+// are false
+// When interpreted as an xor, these are the bits that are different
+func (id ID) OnesIndices() (ones map[int]bool) {
+	ones = make(map[int]bool)
+	for i := 0; i < IDBytes; i++ {
+		for j := 0; j < 8; j++ {
+			index := 8*i + j
+			ones[index] = (id[i]>>uint8(j))&0x1 != 0
+		}
+	}
+	// 
+	ones[8*IDBytes] = true
+	return ones
+}
+
 // Generate a new ID from nothing.
 func NewRandomID() (ret ID) {
 	for i := 0; i < IDBytes; i++ {
