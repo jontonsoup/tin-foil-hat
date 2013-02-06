@@ -43,7 +43,9 @@ func LookupContact(k *Kademlia, id ID) (c *Contact, ok bool) {
 	}
 	bucket := &k.Buckets[index]
 	e, ok := bucket.lookupContact(id)
-	c = e.Value.(*Contact)
+	if ok {
+		c = e.Value.(*Contact)
+	}
 	return
 }
 

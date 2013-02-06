@@ -5,6 +5,7 @@ package kademlia
 // other groups' code.
 
 import (
+	"errors"
 	"log"
 	"net"
 	"net/rpc"
@@ -41,16 +42,8 @@ func SendPing(k *Kademlia, address string) (pong *Pong, err error) {
 	if err != nil {
 		return
 	}
-	if !pong.MsgID.Equals(k.NodeID) {
-		host, port, err := parseAddress(address)
-		if err != nil {
-			return pong, err
-		}
-		contact := &Contact{pong.MsgID, host, port}
-		log.Print("Adding contact ", pong.MsgID.AsString())
-		k.addContact(contact)
-	} else {
-		log.Print("Stop pinging yourself!")
+	if !pong.MsgID.Equals(ping.MsgID) {
+		err = errors.New("Pong MsgID didn't match Ping MsgID")
 	}
 
 	return
@@ -58,11 +51,11 @@ func SendPing(k *Kademlia, address string) (pong *Pong, err error) {
 
 func (k *Kademlia) Ping(ping Ping, pong *Pong) error {
 	// This one's a freebie.
-	if !ping.MsgID.Equals(k.NodeID) {
+	if !ping.Sender.NodeID.Equals(k.NodeID) {
 		log.Print("Adding contact: ", ping.Sender.NodeID.AsString())
 		k.addContact(&ping.Sender)
 	}
-	pong.MsgID = k.NodeID
+	pong.MsgID = ping.MsgID
 	return nil
 }
 
