@@ -96,8 +96,17 @@ type FindNodeResult struct {
 	Err   error
 }
 
+func SendFindNode(k *Kademlia, nodeID ID) ([]FoundNode, error) {
+	// TODO
+	// send a findNode rpc and return the k-closest nodes
+	return nil, errors.New("Not Implemented")
+}
+
 func (k *Kademlia) FindNode(req FindNodeRequest, res *FindNodeResult) error {
-	// TODO: Implement.
+	// TODO: Implement.  
+
+	// Find the k closest nodes to FindNodeRequest.NodeID and pack
+	// them in FindNodeResult.Nodes
 	return nil
 }
 
