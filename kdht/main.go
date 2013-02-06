@@ -50,12 +50,21 @@ func main() {
 	// Your code should loop forever, reading instructions from stdin and
 	// printing their results to stdout. See README.txt for more details.
 	pong, err := kademlia.SendPing(kadem, firstPeerStr)
-
 	if err != nil {
 		log.Fatal("Initial ping error: ", err)
 	}
 
 	log.Printf("pong msgID: %s\n", pong.MsgID.AsString())
+
+	foundNodes, err := kademlia.SendFindNode(kadem, kadem.NodeID, firstPeerStr)
+
+	if err != nil {
+		log.Fatal("Bootstrap find_node error: ", err)
+	}
+
+	for i, node := range foundNodes {
+		log.Printf("Node ", string(i), ": ", node.NodeID.AsString())
+	}
 
 	r := bufio.NewReader(os.Stdin)
 	for {
@@ -115,19 +124,20 @@ func runCommand(k *kademlia.Kademlia, s string) (err error) {
 			log.Printf("usage: find_node key")
 			return
 		}
-
-		id, err := kademlia.FromString(fields[1])
-		if err != nil {
-			log.Printf("Invalid NodeID: ", fields[1])
-			return nil
-		}
-		nodes, err := kademlia.SendFindNode(k, id)
-		if err != nil {
-			return err
-		}
-		for i, node := range nodes {
-			log.Printf("Close node ", i, node.NodeID.AsString())
-		}
+		log.Printf("Not implemented")
+		return
+		// id, err := kademlia.FromString(fields[1])
+		// if err != nil {
+		// 	log.Printf("Invalid NodeID: ", fields[1])
+		// 	return nil
+		// }
+		// nodes, err := kademlia.SendFindNode(k, id)
+		// if err != nil {
+		// 	return err
+		// }
+		// for i, node := range nodes {
+		// 	log.Printf("Close node ", i, node.NodeID.AsString())
+		// }
 	default:
 		fmt.Println("Unrecognized command", fields[0])
 	}
