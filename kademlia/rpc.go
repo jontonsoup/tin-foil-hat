@@ -107,6 +107,16 @@ func (k *Kademlia) FindNode(req FindNodeRequest, res *FindNodeResult) error {
 
 	// Find the k closest nodes to FindNodeRequest.NodeID and pack
 	// them in FindNodeResult.Nodes
+	k.addContact(&req.Sender)
+
+	bucketIndexes := k.indexSearchOrder(req.NodeID)
+
+	for i := range bucketIndexes {
+		// add as many contacts from bucket i as possible,
+		// close nodes first.
+		log.Printf(string(i))
+		// if the slice is full, break
+	}
 	return nil
 }
 
