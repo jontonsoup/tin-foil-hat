@@ -36,7 +36,7 @@ func SendPing(k *Kademlia, address string) (pong *Pong, err error) {
 		return
 	}
 	ping := new(Ping)
-	ping.MsgID = k.NodeID
+	ping.MsgID = NewRandomID()
 	ping.Sender = k.Self
 	err = client.Call("Kademlia.Ping", ping, &pong)
 	if err != nil {

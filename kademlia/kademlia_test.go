@@ -84,11 +84,9 @@ func TestSendPing(t *testing.T) {
 	// start serving
 	go http.Serve(l, nil)
 	// send a ping to server at listenStr, using nodeStr
-	pong, err := SendPing(kadem, nodeStr)
+	// if there's an error, we'll fail this test
+	_, err = SendPing(kadem, nodeStr)
 	if err != nil {
-		t.Fail()
-	}
-	if pong.MsgID.AsString() != kadem.Self.NodeID.AsString() {
 		t.Fail()
 	}
 }
