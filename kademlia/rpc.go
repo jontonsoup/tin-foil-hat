@@ -210,3 +210,25 @@ func contactToFoundNode(c *Contact) FoundNode {
 	f.Port = c.Port
 	return *f
 }
+
+func foundNodeToContact(f *FoundNode) Contact {
+	c := new(Contact)
+	ip = net.ParseIP(f.IPAddr)
+	c.Host = ip
+	c.NodeID = f.NodeID
+	c.Port = f.Port
+	return c
+}
+
+//    _
+//           |E]
+//         .-|=====-.
+//         | | MAIL |
+//         |________|___
+//             ||
+//             ||
+//             ||   www                %%%
+//      vwv    ||   )_(,;;;,        ,;,\_/ www
+//      )_(    ||   \|/ \_/         )_(\|  (_)
+//      \|   \ || /\\|/  |/         \| \|// |
+//   ___\|//jgs||//_\V/_\|//_______\\|//V/\\|/__
