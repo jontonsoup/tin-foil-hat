@@ -119,6 +119,10 @@ func SendFindNode(k *Kademlia, nodeID ID, address string) ([]FoundNode, error) {
 		err = res.Err
 	}
 
+	for _, node := range res.Nodes {
+		c := foundNodeToContact(&node)
+		k.addContact(&c)
+	}
 	return res.Nodes, err
 }
 
@@ -213,11 +217,11 @@ func contactToFoundNode(c *Contact) FoundNode {
 
 func foundNodeToContact(f *FoundNode) Contact {
 	c := new(Contact)
-	ip = net.ParseIP(f.IPAddr)
+	ip := net.ParseIP(f.IPAddr)
 	c.Host = ip
 	c.NodeID = f.NodeID
 	c.Port = f.Port
-	return c
+	return *c
 }
 
 //    _
