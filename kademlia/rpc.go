@@ -32,10 +32,10 @@ type Pong struct {
 
 func SendPing(k *Kademlia, address string) (pong *Pong, err error) {
 	client, err := rpc.DialHTTP("tcp", address)
-	defer client.Close()
 	if err != nil {
 		return
 	}
+	defer client.Close()
 	ping := new(Ping)
 	ping.MsgID = NewRandomID()
 	ping.Sender = k.Self
@@ -101,10 +101,11 @@ func SendFindNode(k *Kademlia, nodeID ID, address string) ([]FoundNode, error) {
 	// TODO
 	// send a findNode rpc and return the k-closest nodes
 	client, err := rpc.DialHTTP("tcp", address)
-	defer client.Close()
 	if err != nil {
 		return nil, err
 	}
+	defer client.Close()
+
 	msgID := NewRandomID()
 	req := FindNodeRequest{k.Self, msgID, k.NodeID}
 
@@ -223,16 +224,3 @@ func foundNodeToContact(f *FoundNode) Contact {
 	c.Port = f.Port
 	return *c
 }
-
-//    _
-//           |E]
-//         .-|=====-.
-//         | | MAIL |
-//         |________|___
-//             ||
-//             ||
-//             ||   www                %%%
-//      vwv    ||   )_(,;;;,        ,;,\_/ www
-//      )_(    ||   \|/ \_/         )_(\|  (_)
-//      \|   \ || /\\|/  |/         \| \|// |
-//   ___\|//jgs||//_\V/_\|//_______\\|//V/\\|/__
