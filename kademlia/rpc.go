@@ -5,7 +5,6 @@ package kademlia
 // other groups' code.
 
 import (
-	"container/list"
 	"errors"
 	"log"
 	"net"
@@ -134,39 +133,19 @@ func (k *Kademlia) FindNode(req FindNodeRequest, res *FindNodeResult) error {
 	// them in FindNodeResult.Nodes
 	k.addContact(&req.Sender)
 
+	contacts, err := k.closestContacts(req.NodeID, req.Sender.NodeID)
+
+	if err != nil {
+		res.Err = err
+		return err
+	}
+
 	//set the msg id
 	res.MsgID = req.MsgID
-
-	bucketIndexes, doneChan := k.indexSearchOrder(req.NodeID)
-
-	for i := range bucketIndexes {
-		// add as many contacts from bucket i as possible,
-
-		currentBucket := k.Buckets[i].contacts
-		sortedList := new(list.List)
-
-		//sort that list |suspect|
-		for e := currentBucket.Front(); e != nil; e = e.Next() {
-			InsertIntoListInASortedFashion(sortedList, e.Value.(*Contact), func(first *Contact, second *Contact) bool {
-				return first.NodeID.Xor(req.NodeID).Compare(second.NodeID.Xor(req.NodeID)) == 1
-			})
-		}
-
-		// (^._.^)~ kirby says add as much as you can to return node
-		for e := sortedList.Front(); e != nil; e = e.Next() {
-			res.Nodes = append(res.Nodes, contactToFoundNode(e.Value.(*Contact)))
-			if len(res.Nodes) == MAX_BUCKET_SIZE {
-				break
-			}
-		}
-		if len(res.Nodes) == MAX_BUCKET_SIZE {
-			break
-		}
-
-		// close nodes first.
-		// if the slice is full, break and tell doneChan we're done
+	res.Nodes = make([]FoundNode, len(contacts))
+	for i, c := range contacts {
+		res.Nodes[i] = contactToFoundNode(&c)
 	}
-	doneChan <- true
 
 	return nil
 }

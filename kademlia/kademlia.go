@@ -1,6 +1,7 @@
 package kademlia
 
 import (
+	"container/list"
 	"log"
 	"net"
 )
@@ -15,6 +16,7 @@ type Kademlia struct {
 	NodeID  ID
 	Buckets [NUM_BUCKETS]Bucket
 	Self    Contact
+	Table   map[ID][]byte
 }
 
 func NewKademlia(address string) *Kademlia {
@@ -30,6 +32,7 @@ func newKademliaSplitAddress(ip net.IP, port uint16) *Kademlia {
 	k.NodeID = NewRandomID()
 	k.Self = Contact{k.NodeID, ip, port}
 	k.addContact(&k.Self)
+	k.Table = make(map[ID][]byte)
 	return k
 }
 
@@ -56,6 +59,64 @@ func (k *Kademlia) addContact(c *Contact) {
 	index := k.index(c.NodeID)
 	bucket := &k.Buckets[index]
 	bucket.updateContact(c)
+}
+
+func (k *Kademlia) closestNodes(searchID ID, excludedID ID) ([]FoundNode, error) {
+	cs, err := k.closestContacts(searchID, excludedID)
+	if err != nil {
+		return nil, err
+	}
+	nodes := make([]FoundNode, len(cs))
+
+	for i, c := range cs {
+		nodes[i] = contactToFoundNode(&c)
+	}
+	return nodes, nil
+}
+
+func (k *Kademlia) closestContacts(searchID ID, excludedID ID) (contacts []Contact, err error) {
+	bucketIndexes, doneChan := k.indexSearchOrder(searchID)
+	contacts = make([]Contact, 0)
+indicesLoop:
+	for i := range bucketIndexes {
+		// add as many contacts from bucket i as possible,
+
+		currentBucket := k.Buckets[i].contacts
+		sortedList := new(list.List)
+
+		//sort that list |suspect|
+		for e := currentBucket.Front(); e != nil; e = e.Next() {
+			InsertSorted(sortedList, e.Value.(*Contact), func(first *Contact, second *Contact) bool {
+				firstDistance := first.NodeID.Xor(searchID)
+				secondDistance := second.NodeID.Xor(searchID)
+				return firstDistance.Compare(secondDistance) == 1
+			})
+		}
+
+		// (^._.^)~ kirby says add as much as you can to output slice
+		for e := sortedList.Front(); e != nil; e = e.Next() {
+			c := e.Value.(*Contact)
+			if !c.NodeID.Equals(excludedID) {
+				contacts = append(contacts, *c)
+
+				if len(contacts) == MAX_BUCKET_SIZE {
+					break indicesLoop
+				}
+			}
+		}
+	}
+	doneChan <- true
+	return
+}
+
+func InsertSorted(inputlist *list.List, item *Contact, greaterThan func(*Contact, *Contact) bool) {
+	for e := inputlist.Front(); e != nil; e = e.Next() {
+		if greaterThan(e.Value.(*Contact), item) {
+			inputlist.InsertBefore(item, e)
+			return
+		}
+	}
+	inputlist.PushBack(item)
 }
 
 func (k *Kademlia) indexSearchOrder(id ID) (<-chan int, chan<- bool) {
