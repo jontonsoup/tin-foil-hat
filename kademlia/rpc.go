@@ -5,12 +5,12 @@ package kademlia
 // other groups' code.
 
 import (
+	"container/list"
 	"errors"
 	"log"
 	"net"
 	"net/rpc"
 	"strconv"
-	"container/list"
 )
 
 // Host identification.
@@ -138,9 +138,10 @@ func (k *Kademlia) FindNode(req FindNodeRequest, res *FindNodeResult) error {
 		// add as many contacts from bucket i as possible,
 
 		currentBucket := k.Buckets[i].contacts
-		sortedList := new (list.List)
+		sortedList := new(list.List)
 
 		//sort that list |suspect|
+		//summon the power of the sword of doom
 		// 		................(_)
 		// ...............(___)
 		// ...............(___)
@@ -177,10 +178,21 @@ func (k *Kademlia) FindNode(req FindNodeRequest, res *FindNodeResult) error {
 		// ...............\\#//
 		// .................\/
 		for e := currentBucket.Front(); e != nil; e = e.Next() {
-			InsertIntoListInASortedFashion(sortedList, e.Value.(Contact) ,func (first Contact, second Contact) bool {
-				return first.NodeID.Xor(req.NodeID).Compare(second.NodeID.Xor(req.NodeID)) == 1})
+			InsertIntoListInASortedFashion(sortedList, e.Value.(Contact), func(first Contact, second Contact) bool {
+				return first.NodeID.Xor(req.NodeID).Compare(second.NodeID.Xor(req.NodeID)) == 1
+			})
 		}
 
+		// (^._.^)~ kirby says add as much as you can to return node
+		for e := sortedList.Front(); e != nil; e = e.Next() {
+			res.Nodes = append(res.Nodes, contactToFoundNode(e.Value.(*Contact)))
+			if len(res.Nodes) == MAX_BUCKET_SIZE {
+				break
+			}
+		}
+		if len(res.Nodes) == MAX_BUCKET_SIZE {
+			break
+		}
 
 		// close nodes first.
 		log.Printf("Look at bucket", i)
