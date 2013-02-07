@@ -10,6 +10,7 @@ import (
 	"net"
 	"net/rpc"
 	"strconv"
+	"container/list"
 )
 
 // Host identification.
@@ -122,16 +123,65 @@ func SendFindNode(k *Kademlia, nodeID ID, address string) ([]FoundNode, error) {
 }
 
 func (k *Kademlia) FindNode(req FindNodeRequest, res *FindNodeResult) error {
-	// TODO: Implement.  
+	// TODO: Implement.
 
 	// Find the k closest nodes to FindNodeRequest.NodeID and pack
 	// them in FindNodeResult.Nodes
 	k.addContact(&req.Sender)
 
+	//set the msg id
+	res.MsgID = req.MsgID
+
 	bucketIndexes, doneChan := k.indexSearchOrder(req.NodeID)
 
 	for i := range bucketIndexes {
 		// add as many contacts from bucket i as possible,
+
+		currentBucket := k.Buckets[i].contacts
+		sortedList := new (list.List)
+
+		//sort that list |suspect|
+		// 		................(_)
+		// ...............(___)
+		// ...............(___)
+		// ...............(___)
+		// ...............(___)
+		// ./\_____/\__/----\__/\_____/\
+		// .\_____\_°_¤ ---- ¤_°_/____/
+		// .............\ __°__ /
+		// ..............|\_°_/|
+		// ..............[|\_/|]
+		// ..............[|[¤]|]
+		// ..............[|;¤;|]
+		// ..............[;;¤;;]
+		// .............;[|;¤]|]\
+		// ............;;[|;¤]|]-\
+		// ...........;;;[|[o]|]--\
+		// ..........;;;;[|[o]|]---\
+		// .........;;;;;[|[o]|]|---|
+		// .........;;;;;[|[o]|]|---|
+		// ..........;;;;[|[o]|/---/
+		// ...........;;;[|[o]/---/
+		// ............;;[|[]/---/
+		// .............;[|[/---/
+		// ..............[|/---/
+		// .............../---/
+		// ............../---/|]
+		// ............./---/]|];
+		// ............/---/#]|];;
+		// ...........|---|[#]|];;;
+		// ...........|---|[#]|];;;
+		// ............\--|[#]|];;
+		// .............\-|[#]|];
+		// ..............\|[#]|]
+		// ...............\\#//
+		// .................\/
+		for e := currentBucket.Front(); e != nil; e = e.Next() {
+			InsertIntoListInASortedFashion(sortedList, e.Value.(Contact) ,func (first Contact, second Contact) bool {
+				return first.NodeID.Xor(req.NodeID).Compare(second.NodeID.Xor(req.NodeID)) == 1})
+		}
+
+
 		// close nodes first.
 		log.Printf("Look at bucket", i)
 		// if the slice is full, break and tell doneChan we're done
