@@ -52,13 +52,12 @@ func (b *Bucket) updateContact(c *Contact) {
 	}
 }
 
-
-func InsertIntoListInASortedFashion(inputlist *list.List, item Contact, greaterThan func(Contact, Contact) bool ) {
-			for e := inputlist.Front(); e != nil; e = e.Next() {
-				if greaterThan(e.Value.(Contact), item) {
-					inputlist.InsertBefore(item, e)
-					return
-				}
+func InsertIntoListInASortedFashion(inputlist *list.List, item *Contact, greaterThan func(*Contact, *Contact) bool) {
+	for e := inputlist.Front(); e != nil; e = e.Next() {
+		if greaterThan(e.Value.(*Contact), item) {
+			inputlist.InsertBefore(item, e)
+			return
 		}
-		inputlist.PushBack(item)
+	}
+	inputlist.PushBack(item)
 }

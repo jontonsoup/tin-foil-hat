@@ -141,44 +141,8 @@ func (k *Kademlia) FindNode(req FindNodeRequest, res *FindNodeResult) error {
 		sortedList := new(list.List)
 
 		//sort that list |suspect|
-		//summon the power of the sword of doom
-		// 		................(_)
-		// ...............(___)
-		// ...............(___)
-		// ...............(___)
-		// ...............(___)
-		// ./\_____/\__/----\__/\_____/\
-		// .\_____\_°_¤ ---- ¤_°_/____/
-		// .............\ __°__ /
-		// ..............|\_°_/|
-		// ..............[|\_/|]
-		// ..............[|[¤]|]
-		// ..............[|;¤;|]
-		// ..............[;;¤;;]
-		// .............;[|;¤]|]\
-		// ............;;[|;¤]|]-\
-		// ...........;;;[|[o]|]--\
-		// ..........;;;;[|[o]|]---\
-		// .........;;;;;[|[o]|]|---|
-		// .........;;;;;[|[o]|]|---|
-		// ..........;;;;[|[o]|/---/
-		// ...........;;;[|[o]/---/
-		// ............;;[|[]/---/
-		// .............;[|[/---/
-		// ..............[|/---/
-		// .............../---/
-		// ............../---/|]
-		// ............./---/]|];
-		// ............/---/#]|];;
-		// ...........|---|[#]|];;;
-		// ...........|---|[#]|];;;
-		// ............\--|[#]|];;
-		// .............\-|[#]|];
-		// ..............\|[#]|]
-		// ...............\\#//
-		// .................\/
 		for e := currentBucket.Front(); e != nil; e = e.Next() {
-			InsertIntoListInASortedFashion(sortedList, e.Value.(Contact), func(first Contact, second Contact) bool {
+			InsertIntoListInASortedFashion(sortedList, e.Value.(*Contact), func(first *Contact, second *Contact) bool {
 				return first.NodeID.Xor(req.NodeID).Compare(second.NodeID.Xor(req.NodeID)) == 1
 			})
 		}
@@ -195,7 +159,6 @@ func (k *Kademlia) FindNode(req FindNodeRequest, res *FindNodeResult) error {
 		}
 
 		// close nodes first.
-		log.Printf("Look at bucket", i)
 		// if the slice is full, break and tell doneChan we're done
 	}
 	doneChan <- true
