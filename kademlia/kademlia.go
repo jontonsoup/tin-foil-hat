@@ -166,7 +166,7 @@ func (k *Kademlia) produceIndexSearchOrder(id ID, outChan chan<- int, doneChan <
 					break
 				}
 			}
-			if i <= 0 {
+			if i < 0 {
 				break
 			}
 		}
