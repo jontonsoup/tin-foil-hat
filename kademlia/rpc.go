@@ -34,7 +34,7 @@ func SendPing(k *Kademlia, address string) (pong *Pong, err error) {
 	if err != nil {
 		return
 	}
-	defer client.Close()
+
 	ping := new(Ping)
 	ping.MsgID = NewRandomID()
 	ping.Sender = k.Self
@@ -42,6 +42,8 @@ func SendPing(k *Kademlia, address string) (pong *Pong, err error) {
 	if err != nil {
 		return
 	}
+	defer client.Close()
+
 	if !pong.MsgID.Equals(ping.MsgID) {
 		err = errors.New("Pong MsgID didn't match Ping MsgID")
 	}
@@ -103,7 +105,6 @@ func SendFindNode(k *Kademlia, nodeID ID, address string) ([]FoundNode, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer client.Close()
 
 	msgID := NewRandomID()
 	req := FindNodeRequest{k.Self, msgID, k.NodeID}
@@ -113,6 +114,8 @@ func SendFindNode(k *Kademlia, nodeID ID, address string) ([]FoundNode, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer client.Close()
+
 	if !res.MsgID.Equals(req.MsgID) {
 		err = errors.New("Response MsgID didn't match request MsgID")
 	} else if res.Err != nil {
@@ -128,24 +131,23 @@ func SendFindNode(k *Kademlia, nodeID ID, address string) ([]FoundNode, error) {
 
 func (k *Kademlia) FindNode(req FindNodeRequest, res *FindNodeResult) error {
 	// TODO: Implement.
-
+	log.Println("Handling FindNode request:", req)
 	// Find the k closest nodes to FindNodeRequest.NodeID and pack
 	// them in FindNodeResult.Nodes
 	k.addContact(&req.Sender)
 
-	contacts, err := k.closestContacts(req.NodeID, req.Sender.NodeID)
+	log.Println("Finding close nodes")
+	nodes, err := k.closestNodes(req.NodeID, req.Sender.NodeID)
 
 	if err != nil {
 		res.Err = err
 		return err
 	}
 
+	log.Println("Finishing up")
 	//set the msg id
 	res.MsgID = req.MsgID
-	res.Nodes = make([]FoundNode, len(contacts))
-	for i, c := range contacts {
-		res.Nodes[i] = contactToFoundNode(&c)
-	}
+	res.Nodes = nodes
 
 	return nil
 }
