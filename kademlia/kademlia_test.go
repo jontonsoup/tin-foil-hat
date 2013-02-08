@@ -130,3 +130,22 @@ func TestOnesIndices(t *testing.T) {
 		}
 	}
 }
+
+func TestDoInSearchOrder(t *testing.T) {
+	k := NewKademlia("127.0.0.1:8890")
+	k.NodeID = HalfHalfID()
+
+	other := OnesID()
+
+	count := 0
+	k.doInSearchOrder(other, func(index int) bool {
+		if index < 0 || index >= NUM_BUCKETS {
+			t.Fail()
+		}
+		count++
+		return true
+	})
+	if count != NUM_BUCKETS {
+		t.Fail()
+	}
+}

@@ -19,13 +19,6 @@ type Kademlia struct {
 	Table   map[ID][]byte
 }
 
-// Host identification.
-type Contact struct {
-	NodeID ID
-	Host   net.IP
-	Port   uint16
-}
-
 func NewKademlia(address string) *Kademlia {
 	ip, port, err := parseAddress(address)
 	if err != nil {
@@ -55,9 +48,19 @@ func (k *Kademlia) updateContact(c *Contact) {
 			log.Print("Adding contact to bucket: ", c.NodeID.AsString())
 			b.contacts.PushBack(c)
 		} else {
-			// TODO: properly update a full bucket. Ping
-			// the first contact in the list
-
+			// ping the least recently seen node
+			firstEl := b.contacts.Front()
+			first := firstEl.Value.(*Contact)
+			_, err := SendPing(k, first.Address())
+			if err != nil {
+				log.Println("Old node responded, ignoring new contact")
+				// first is now most recently seen
+				b.contacts.MoveToBack(firstEl)
+			} else {
+				log.Println("Old node did not respond, evicting and adding new contact")
+				b.contacts.Remove(firstEl)
+				b.contacts.PushBack(c)
+			}
 		}
 	} else {
 		log.Print("Previously seen contact recently seen: ", c.NodeID.AsString())
@@ -85,13 +88,12 @@ func (k *Kademlia) closestNodes(searchID ID, excludedID ID, amount int) ([]Found
 }
 
 func (k *Kademlia) closestContacts(searchID ID, excludedID ID, amount int) (contacts []Contact, err error) {
-	bucketIndexes, doneChan := k.indexSearchOrder(searchID)
 	contacts = make([]Contact, 0)
-indicesLoop:
-	for i := range bucketIndexes {
+
+	k.doInSearchOrder(searchID, func(index int) bool {
 		// add as many contacts from bucket i as possible,
 
-		currentBucket := k.Buckets[i].contacts
+		currentBucket := k.Buckets[index].contacts
 		sortedList := new(list.List)
 
 		//sort that list |suspect|
@@ -108,15 +110,15 @@ indicesLoop:
 			c := e.Value.(*Contact)
 			if !c.NodeID.Equals(excludedID) {
 				contacts = append(contacts, *c)
-
+				// if the slice is full, break
 				if len(contacts) == amount {
-					break indicesLoop
+					return false
 				}
 			}
 		}
-	}
-	log.Println("Done now")
-	doneChan <- true
+		// slice isn't full, do on the next index
+		return true
+	})
 	return
 }
 
@@ -134,57 +136,27 @@ func LookupContact(k *Kademlia, id ID) (c *Contact, ok bool) {
 	return
 }
 
-func (k *Kademlia) indexSearchOrder(id ID) (<-chan int, chan<- bool) {
-	// go a goroutine that sends the correct indices out on the
-	// channel and returns the channel
-	indicesChan := make(chan int)
-	doneChan := make(chan bool)
-	go k.produceIndexSearchOrder(id, indicesChan, doneChan)
-	return indicesChan, doneChan
-}
-
-func (k *Kademlia) produceIndexSearchOrder(id ID, outChan chan<- int, doneChan <-chan bool) {
+func (k *Kademlia) doInSearchOrder(id ID, usrFunc func(int) bool) {
 	// produce the indices for the closest k-buckets to the id
 	ones := k.NodeID.Xor(id).OnesIndices()
 
-	i := 0
-	searchOnes := true
-	for {
-		select {
-		case <-doneChan:
-			return
-		default:
-			// not done, produce more!
-		}
-
-		// check if we're searching back or forward
-		if searchOnes {
-			// first loop right looking for ones
-			for ; i < NUM_BUCKETS; i++ {
-				if ones[i] {
-					outChan <- i
-					i++
-					break
-				}
-			}
-			if i == NUM_BUCKETS {
-				searchOnes = false
-				i--
-			}
-		} else {
-			// then loop back looking for zeros
-			for ; i >= 0; i-- {
-				if !ones[i] {
-					outChan <- i
-					i--
-					break
-				}
-			}
-			if i < 0 {
-				break
+	log.Println("Searching for ones")
+	for i := 0; i < NUM_BUCKETS; i++ {
+		if ones[i] {
+			if !usrFunc(i) {
+				return
 			}
 		}
 	}
-	close(outChan)
-	<-doneChan
+
+	log.Println("Searching for zeros")
+	for i := NUM_BUCKETS - 1; i >= 0; i-- {
+		if !ones[i] {
+			if !usrFunc(i) {
+				return
+			}
+		}
+	}
+
+	log.Println("Done searching")
 }
