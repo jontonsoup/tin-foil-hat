@@ -32,22 +32,3 @@ func (b *Bucket) lookupContact(id ID) (e *list.Element, ok bool) {
 	ok = false
 	return
 }
-
-// Correctly updates the bucket given that the contact given has just
-// been observed
-func (b *Bucket) updateContact(c *Contact) {
-	e, ok := b.lookupContact(c.NodeID)
-	if !ok {
-		if b.contacts.Len() <= MAX_BUCKET_SIZE {
-			log.Print("Adding contact to bucket: ", c.NodeID.AsString())
-			b.contacts.PushBack(c)
-		} else {
-			// TODO: properly update a full bucket. Ping
-			// the first contact in the list
-		}
-	} else {
-		log.Print("Previously seen contact recently seen: ", c.NodeID.AsString())
-		// Move contact to most recently seen in the bucket.
-		b.contacts.MoveToBack(e)
-	}
-}

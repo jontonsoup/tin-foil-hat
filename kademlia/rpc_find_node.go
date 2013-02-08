@@ -51,7 +51,7 @@ func SendFindNode(k *Kademlia, nodeID ID, address string) ([]FoundNode, error) {
 
 	for _, node := range res.Nodes {
 		c := foundNodeToContact(&node)
-		k.addContact(&c)
+		k.updateContact(&c)
 	}
 	return res.Nodes, err
 }
@@ -61,7 +61,7 @@ func (k *Kademlia) FindNode(req FindNodeRequest, res *FindNodeResult) error {
 	log.Println("Handling FindNode request:", req)
 	// Find the k closest nodes to FindNodeRequest.NodeID and pack
 	// them in FindNodeResult.Nodes
-	k.addContact(&req.Sender)
+	k.updateContact(&req.Sender)
 
 	log.Println("Finding close nodes")
 	nodes, err := k.closestNodes(req.NodeID, req.Sender.NodeID, MAX_BUCKET_SIZE)

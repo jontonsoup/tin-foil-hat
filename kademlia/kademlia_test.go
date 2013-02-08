@@ -54,7 +54,7 @@ func TestAddContact(t *testing.T) {
 	index := k.index(c.NodeID)
 	k.Buckets[index] = *b
 	// add contact
-	k.addContact(c)
+	k.updateContact(c)
 	if k.Buckets[index].contacts.Len() == 0 {
 		t.Fail()
 	}
