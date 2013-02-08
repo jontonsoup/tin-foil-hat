@@ -19,6 +19,13 @@ type Kademlia struct {
 	Table   map[ID][]byte
 }
 
+// Host identification.
+type Contact struct {
+	NodeID ID
+	Host   net.IP
+	Port   uint16
+}
+
 func NewKademlia(address string) *Kademlia {
 	ip, port, err := parseAddress(address)
 	if err != nil {
@@ -36,29 +43,15 @@ func newKademliaSplitAddress(ip net.IP, port uint16) *Kademlia {
 	return k
 }
 
-func (k *Kademlia) index(id ID) int {
-	// convert ID into index for Kademlia.Buckets array
-	return k.NodeID.Xor(id).PrefixLen()
-}
-
-func LookupContact(k *Kademlia, id ID) (c *Contact, ok bool) {
-	index := k.index(id)
-	if index >= len(k.Buckets) {
-		ok = false
-		return
-	}
-	bucket := &k.Buckets[index]
-	e, ok := bucket.lookupContact(id)
-	if ok {
-		c = e.Value.(*Contact)
-	}
-	return
-}
-
 func (k *Kademlia) addContact(c *Contact) {
 	index := k.index(c.NodeID)
 	bucket := &k.Buckets[index]
 	bucket.updateContact(c)
+}
+
+func (k *Kademlia) index(id ID) int {
+	// convert ID into index for Kademlia.Buckets array
+	return k.NodeID.Xor(id).PrefixLen()
 }
 
 func (k *Kademlia) closestNodes(searchID ID, excludedID ID) ([]FoundNode, error) {
@@ -110,14 +103,18 @@ indicesLoop:
 	return
 }
 
-func InsertSorted(inputlist *list.List, item *Contact, greaterThan func(*Contact, *Contact) bool) {
-	for e := inputlist.Front(); e != nil; e = e.Next() {
-		if greaterThan(e.Value.(*Contact), item) {
-			inputlist.InsertBefore(item, e)
-			return
-		}
+func LookupContact(k *Kademlia, id ID) (c *Contact, ok bool) {
+	index := k.index(id)
+	if index >= len(k.Buckets) {
+		ok = false
+		return
 	}
-	inputlist.PushBack(item)
+	bucket := &k.Buckets[index]
+	e, ok := bucket.lookupContact(id)
+	if ok {
+		c = e.Value.(*Contact)
+	}
+	return
 }
 
 func (k *Kademlia) indexSearchOrder(id ID) (<-chan int, chan<- bool) {
