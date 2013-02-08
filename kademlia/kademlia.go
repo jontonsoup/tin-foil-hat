@@ -10,6 +10,7 @@ import (
 // as a receiver for the RPC methods, which is required by that package.
 
 const NUM_BUCKETS = IDBytes*8 + 1
+const ALPHA = 3
 
 // Core Kademlia type. You can put whatever state you want in this.
 type Kademlia struct {

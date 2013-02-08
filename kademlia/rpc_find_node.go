@@ -78,3 +78,39 @@ func (k *Kademlia) FindNode(req FindNodeRequest, res *FindNodeResult) error {
 
 	return nil
 }
+
+func IterativeFindNode(k *Kademlia, searchID nodeID) ([]Contact, error) {
+	shortList := new(list.List)
+	alreadySeen := new(map[*Contact]bool)
+	initNodes := closestContacts(searchID, k.NodeID, ALPHA)
+
+	closerNode := func(c1 *Contact, c2 *Contact) bool {
+		d1 := c1.Xor(searchID)
+		d2 := c2.Xor(searchID)
+		return d1.Compare(d2) == 1
+	}
+
+	for _, node := range initNodes {
+		InsertSorted(shortList, node, closerNode)
+	}
+
+	for {
+		nextSearchNodes := getUnseen(shortList, alreadySeen)
+
+		if len(nextSearchNodes) == 0 {
+			break
+		}
+
+		// send find_node rpcs to nextSearchNodes
+
+		// mark them alreadySeen
+		for _, node := range nextSearchNodes {
+			alreadySeen[node] = true
+		}
+
+		// aggregate the new contacts into the shortList, keeping
+		// only the K closest
+	}
+
+	return closestNodes, nil
+}
