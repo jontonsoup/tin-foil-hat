@@ -64,7 +64,7 @@ func (k *Kademlia) FindNode(req FindNodeRequest, res *FindNodeResult) error {
 	k.addContact(&req.Sender)
 
 	log.Println("Finding close nodes")
-	nodes, err := k.closestNodes(req.NodeID, req.Sender.NodeID)
+	nodes, err := k.closestNodes(req.NodeID, req.Sender.NodeID, MAX_BUCKET_SIZE)
 
 	if err != nil {
 		res.Err = err

@@ -54,8 +54,8 @@ func (k *Kademlia) index(id ID) int {
 	return k.NodeID.Xor(id).PrefixLen()
 }
 
-func (k *Kademlia) closestNodes(searchID ID, excludedID ID) ([]FoundNode, error) {
-	cs, err := k.closestContacts(searchID, excludedID)
+func (k *Kademlia) closestNodes(searchID ID, excludedID ID, amount int) ([]FoundNode, error) {
+	cs, err := k.closestContacts(searchID, excludedID, amount)
 	if err != nil {
 		return nil, err
 	}
@@ -67,7 +67,7 @@ func (k *Kademlia) closestNodes(searchID ID, excludedID ID) ([]FoundNode, error)
 	return nodes, nil
 }
 
-func (k *Kademlia) closestContacts(searchID ID, excludedID ID) (contacts []Contact, err error) {
+func (k *Kademlia) closestContacts(searchID ID, excludedID ID, amount int) (contacts []Contact, err error) {
 	bucketIndexes, doneChan := k.indexSearchOrder(searchID)
 	contacts = make([]Contact, 0)
 indicesLoop:
@@ -92,7 +92,7 @@ indicesLoop:
 			if !c.NodeID.Equals(excludedID) {
 				contacts = append(contacts, *c)
 
-				if len(contacts) == MAX_BUCKET_SIZE {
+				if len(contacts) == amount {
 					break indicesLoop
 				}
 			}
