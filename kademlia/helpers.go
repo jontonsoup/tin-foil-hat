@@ -42,7 +42,7 @@ func foundNodeToContact(f *FoundNode) Contact {
 	return *c
 }
 
-func InsertSorted(inputlist *list.List, item *Contact, greaterThan func(*Contact, *Contact) bool) {
+func insertSorted(inputlist *list.List, item *Contact, greaterThan func(*Contact, *Contact) bool) {
 	for e := inputlist.Front(); e != nil; e = e.Next() {
 		if greaterThan(e.Value.(*Contact), item) {
 			inputlist.InsertBefore(item, e)
@@ -50,4 +50,39 @@ func InsertSorted(inputlist *list.List, item *Contact, greaterThan func(*Contact
 		}
 	}
 	inputlist.PushBack(item)
+}
+
+// maxLength should be >= length of original inputList
+func insertAllSorted(inputList *list.List, items [](Contact), greaterThan func(*Contact, *Contact) bool, maxLength int) {
+	for _, c := range items {
+		insertSorted(inputList, &c, greaterThan)
+		if inputList.Len() == maxLength {
+			inputList.Remove(inputList.Back())
+		}
+	}
+}
+
+// assumes the id is only in the list once
+func removeFromSorted(l *list.List, id ID) {
+	for e := l.Front(); e != nil; e = e.Next() {
+		c := e.Value.(*Contact)
+		if c.NodeID.Equals(id) {
+			l.Remove(e)
+			return
+		}
+	}
+}
+
+func getUnseen(l *list.List, alreadySeen map[ID]bool, max int) []Contact {
+	unseen := make([]Contact, 0)
+	for e := l.Front(); e != nil; e = e.Next() {
+		c := e.Value.(*Contact)
+		if !alreadySeen[c.NodeID] {
+			unseen = append(unseen, *c)
+			if len(unseen) == max {
+				break
+			}
+		}
+	}
+	return unseen
 }

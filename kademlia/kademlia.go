@@ -75,20 +75,18 @@ func (k *Kademlia) index(id ID) int {
 	return k.NodeID.Xor(id).PrefixLen()
 }
 
-func (k *Kademlia) closestNodes(searchID ID, excludedID ID, amount int) ([]FoundNode, error) {
-	cs, err := k.closestContacts(searchID, excludedID, amount)
-	if err != nil {
-		return nil, err
-	}
+func (k *Kademlia) closestNodes(searchID ID, excludedID ID, amount int) []FoundNode {
+	cs := k.closestContacts(searchID, excludedID, amount)
+
 	nodes := make([]FoundNode, len(cs))
 
 	for i, c := range cs {
 		nodes[i] = contactToFoundNode(&c)
 	}
-	return nodes, nil
+	return nodes
 }
 
-func (k *Kademlia) closestContacts(searchID ID, excludedID ID, amount int) (contacts []Contact, err error) {
+func (k *Kademlia) closestContacts(searchID ID, excludedID ID, amount int) (contacts []Contact) {
 	contacts = make([]Contact, 0)
 
 	k.doInSearchOrder(searchID, func(index int) bool {
@@ -99,7 +97,7 @@ func (k *Kademlia) closestContacts(searchID ID, excludedID ID, amount int) (cont
 
 		//sort that list |suspect|
 		for e := currentBucket.Front(); e != nil; e = e.Next() {
-			InsertSorted(sortedList, e.Value.(*Contact), func(first *Contact, second *Contact) bool {
+			insertSorted(sortedList, e.Value.(*Contact), func(first *Contact, second *Contact) bool {
 				firstDistance := first.NodeID.Xor(searchID)
 				secondDistance := second.NodeID.Xor(searchID)
 				return firstDistance.Compare(secondDistance) == 1

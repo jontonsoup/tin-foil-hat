@@ -125,20 +125,21 @@ func runCommand(k *kademlia.Kademlia, s string) (err error) {
 			log.Printf("usage: find_node key")
 			return
 		}
-		log.Printf("Not implemented")
-		return
-		// id, err := kademlia.FromString(fields[1])
-		// if err != nil {
-		// 	log.Printf("Invalid NodeID: ", fields[1])
-		// 	return nil
-		// }
-		// nodes, err := kademlia.SendFindNode(k, id)
-		// if err != nil {
-		// 	return err
-		// }
-		// for i, node := range nodes {
-		// 	log.Printf("Close node ", i, node.NodeID.AsString())
-		// }
+
+		id, err := kademlia.FromString(fields[1])
+		if err != nil {
+			log.Printf("Invalid NodeID: ", fields[1])
+			return nil
+		}
+
+		contacts, err := kademlia.IterativeFindNode(k, id)
+
+		if err != nil {
+			return err
+		}
+		for i, node := range contacts {
+			log.Printf("Ok: Close node ", i, node.NodeID.AsString())
+		}
 	default:
 		fmt.Println("Unrecognized command", fields[0])
 	}

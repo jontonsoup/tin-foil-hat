@@ -1,6 +1,7 @@
 package kademlia
 
 import (
+	"container/list"
 	"errors"
 	"log"
 	"net/rpc"
@@ -64,12 +65,7 @@ func (k *Kademlia) FindNode(req FindNodeRequest, res *FindNodeResult) error {
 	k.updateContact(&req.Sender)
 
 	log.Println("Finding close nodes")
-	nodes, err := k.closestNodes(req.NodeID, req.Sender.NodeID, MAX_BUCKET_SIZE)
-
-	if err != nil {
-		res.Err = err
-		return err
-	}
+	nodes := k.closestNodes(req.NodeID, req.Sender.NodeID, MAX_BUCKET_SIZE)
 
 	log.Println("Finishing up")
 	//set the msg id
@@ -79,38 +75,75 @@ func (k *Kademlia) FindNode(req FindNodeRequest, res *FindNodeResult) error {
 	return nil
 }
 
-func IterativeFindNode(k *Kademlia, searchID nodeID) ([]Contact, error) {
-	shortList := new(list.List)
-	alreadySeen := new(map[*Contact]bool)
-	initNodes := closestContacts(searchID, k.NodeID, ALPHA)
+func IterativeFindNode(k *Kademlia, searchID ID) ([]Contact, error) {
+	shortList := list.New()
+	alreadySeen := make(map[ID]bool)
+	initNodes := k.closestContacts(searchID, k.NodeID, ALPHA)
 
-	closerNode := func(c1 *Contact, c2 *Contact) bool {
-		d1 := c1.Xor(searchID)
-		d2 := c2.Xor(searchID)
+	isCloser := func(c1 *Contact, c2 *Contact) bool {
+		d1 := c1.NodeID.Xor(searchID)
+		d2 := c2.NodeID.Xor(searchID)
 		return d1.Compare(d2) == 1
 	}
 
-	for _, node := range initNodes {
-		InsertSorted(shortList, node, closerNode)
-	}
+	insertAllSorted(shortList, initNodes, isCloser, MAX_BUCKET_SIZE)
 
 	for {
-		nextSearchNodes := getUnseen(shortList, alreadySeen)
+		nextSearchNodes := getUnseen(shortList, alreadySeen, ALPHA)
 
 		if len(nextSearchNodes) == 0 {
 			break
 		}
 
-		// send find_node rpcs to nextSearchNodes
+		log.Println(len(nextSearchNodes), " next search nodes: ", nextSearchNodes)
+		newNodesChan := k.goFindNodes(nextSearchNodes, searchID)
 
-		// mark them alreadySeen
-		for _, node := range nextSearchNodes {
-			alreadySeen[node] = true
+		// send find_node rpcs to nextSearchNodes, add their nodes to shortList
+		for _, _ = range nextSearchNodes {
+			response := <-newNodesChan
+			if response.Err != nil {
+				removeFromSorted(shortList, response.searchNode.NodeID)
+			}
+			// mark them alreadySeen
+			alreadySeen[response.searchNode.NodeID] = true
+
+			// aggregate the new contacts into the shortList, keeping
+			// only the K closest
+			newNodes := make([]Contact, 0)
+			for _, node := range response.FoundNodes {
+				newNodes = append(newNodes, foundNodeToContact(&node))
+			}
+
+			insertAllSorted(shortList, newNodes, isCloser, MAX_BUCKET_SIZE)
 		}
 
-		// aggregate the new contacts into the shortList, keeping
-		// only the K closest
+	}
+
+	closestNodes := make([]Contact, shortList.Len())
+
+	for e := shortList.Front(); e != nil; e = e.Next() {
+		c := e.Value.(*Contact)
+		closestNodes = append(closestNodes, *c)
 	}
 
 	return closestNodes, nil
+}
+
+type SignedFoundNodes struct {
+	FoundNodes []FoundNode
+	Err        error
+	searchNode *Contact
+}
+
+func (k *Kademlia) goFindNodes(searchNodes []Contact, searchID ID) <-chan SignedFoundNodes {
+	outChan := make(chan SignedFoundNodes)
+	for _, node := range searchNodes {
+		go func() {
+			foundNodes, err := SendFindNode(k, searchID, node.Address())
+			output := SignedFoundNodes{foundNodes, err, &node}
+			outChan <- output
+		}()
+	}
+
+	return outChan
 }
