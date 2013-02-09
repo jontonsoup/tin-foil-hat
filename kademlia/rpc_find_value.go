@@ -24,6 +24,9 @@ func (k *Kademlia) FindValue(req FindValueRequest, res *FindValueResult) error {
 	// return value for FindValueRequest.Key; if not found, return k closest nodes
 	// be sure to fill up res.MsgID with req.MsgID!
 
+	// update contact!
+	k.updateContact(&req.Sender)
+
 	if val, ok := k.Table[req.Key]; ok {
 		// return value
 		res.MsgID = req.MsgID
