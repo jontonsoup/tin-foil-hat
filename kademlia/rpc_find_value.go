@@ -1,5 +1,9 @@
 package kademlia
 
+import (
+	"errors"
+)
+
 // FIND_VALUE
 type FindValueRequest struct {
 	Sender Contact
@@ -17,6 +21,30 @@ type FindValueResult struct {
 }
 
 func (k *Kademlia) FindValue(req FindValueRequest, res *FindValueResult) error {
-	// TODO: Implement.
+	// return value for FindValueRequest.Key; if not found, return k closest nodes
+	// be sure to fill up res.MsgID with req.MsgID!
+
+	if val, ok := k.Table[req.Key]; ok {
+		// return value
+		res.MsgID = req.MsgID
+		res.Value = val
+		res.Err = nil
+		res.Nodes = nil
+	} else {
+		// return closest nodes
+		res.MsgID = req.MsgID
+		res.Value = nil
+		res.Err = nil
+		// run FindNode rpc, by calling SendFindNode
+		var find_node_res *FindNodeResult
+		msgID := NewRandomID()
+		find_node_req := FindNodeRequest{req.Sender, msgID, req.Key}
+		err := k.FindNode(find_node_req, find_node_res)
+		if err != nil {
+			res.Err = errors.New("FindNode rpc call returned an error")
+		}
+		res.Nodes = find_node_res.Nodes
+	}
+
 	return nil
 }
