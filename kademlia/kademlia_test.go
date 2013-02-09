@@ -1,12 +1,12 @@
 package kademlia
 
 import (
-	"fmt"
-	"log"
-	"net"
-	"net/http"
-	"net/rpc"
-	"testing"
+"fmt"
+"log"
+"net"
+"net/http"
+"net/rpc"
+"testing"
 )
 
 func ExampleBucket() {
@@ -144,8 +144,58 @@ func TestDoInSearchOrder(t *testing.T) {
 		}
 		count++
 		return true
-	})
+		})
 	if count != NUM_BUCKETS {
 		t.Fail()
 	}
+
 }
+
+func bootupKademlia(listenStr string, firstPeerStr string) Kademlia {
+	// By default, Go seeds its RNG with 1. This would cause every program to
+	// generate the same sequence of IDs.
+	rand.Seed(time.Now().UnixNano())
+
+	kadem := kademlia.NewKademlia(listenStr)
+
+	rpc.Register(kadem)
+	rpc.HandleHTTP()
+	l, err := net.Listen("tcp", listenStr)
+	if err != nil {
+		log.Fatal("Listen: ", err)
+	}
+
+	// Serve forever.
+	go http.Serve(l, nil)
+
+	// Confirm our server is up with a PING request and then exit.
+	// Your code should loop forever, reading instructions from stdin and
+	// printing their results to stdout. See README.txt for more details.
+	pong, err := kademlia.SendPing(kadem, firstPeerStr)
+	if err != nil {
+		log.Fatal("Initial ping error: ", err)
+	}
+
+	log.Printf("pong msgID: %s\n", pong.MsgID.AsString())
+
+	foundNodes, err := kademlia.SendFindNode(kadem, kadem.NodeID, firstPeerStr)
+
+	if err != nil {
+		log.Fatal("Bootstrap find_node error: ", err)
+	}
+
+	log.Println("Received", len(foundNodes), "nodes")
+	for i, node := range foundNodes {
+		log.Println("Node ", i, ": ", node.NodeID.AsString())
+	}
+	return kadem
+}
+
+func TestDoStore (t *testing.T){
+
+	k := bootupKademlia("127.0.0.1:8890", "127.0.0.1:8090")
+	k2 := bootupKademlia("127.0.0.1:8891", "127.0.0.1:8890")
+
+}
+
+
