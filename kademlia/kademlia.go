@@ -64,7 +64,6 @@ func (k *Kademlia) updateContact(c *Contact) {
 			}
 		}
 	} else {
-		log.Print("Previously seen contact recently seen: ", c.NodeID.AsString())
 		// Move contact to most recently seen in the bucket.
 		b.contacts.MoveToBack(e)
 	}
@@ -97,10 +96,10 @@ func (k *Kademlia) closestContacts(searchID ID, excludedID ID, amount int) (cont
 
 		//sort that list |suspect|
 		for e := currentBucket.Front(); e != nil; e = e.Next() {
-			insertSorted(sortedList, e.Value.(*Contact), func(first *Contact, second *Contact) bool {
+			insertSorted(sortedList, e.Value.(*Contact), func(first *Contact, second *Contact) int {
 				firstDistance := first.NodeID.Xor(searchID)
 				secondDistance := second.NodeID.Xor(searchID)
-				return firstDistance.Compare(secondDistance) == 1
+				return firstDistance.Compare(secondDistance)
 			})
 		}
 
@@ -139,7 +138,6 @@ func (k *Kademlia) doInSearchOrder(id ID, usrFunc func(int) bool) {
 	// produce the indices for the closest k-buckets to the id
 	ones := k.NodeID.Xor(id).OnesIndices()
 
-	log.Println("Searching for ones")
 	for i := 0; i < NUM_BUCKETS; i++ {
 		if ones[i] {
 			if !usrFunc(i) {
@@ -148,7 +146,6 @@ func (k *Kademlia) doInSearchOrder(id ID, usrFunc func(int) bool) {
 		}
 	}
 
-	log.Println("Searching for zeros")
 	for i := NUM_BUCKETS - 1; i >= 0; i-- {
 		if !ones[i] {
 			if !usrFunc(i) {
@@ -157,5 +154,4 @@ func (k *Kademlia) doInSearchOrder(id ID, usrFunc func(int) bool) {
 		}
 	}
 
-	log.Println("Done searching")
 }

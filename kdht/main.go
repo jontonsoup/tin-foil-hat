@@ -137,8 +137,10 @@ func runCommand(k *kademlia.Kademlia, s string) (err error) {
 		if err != nil {
 			return err
 		}
-		for i, node := range contacts {
-			log.Printf("Ok: Close node ", i, node.NodeID.AsString())
+
+		log.Println(len(contacts), "contacts found")
+		for _, node := range contacts {
+			fmt.Println("Ok: ", node.NodeID.AsString())
 		}
 	default:
 		fmt.Println("Unrecognized command", fields[0])
