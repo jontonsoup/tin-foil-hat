@@ -44,13 +44,11 @@ func foundNodeToContact(f *FoundNode) Contact {
 
 // doesn't insert contacts whose nodeID is already in the list
 func insertSorted(inputlist *list.List, item Contact, compare func(Contact, Contact) int) {
-	log.Println("Trying to add ", item.NodeID.AsString())
+
 	for e := inputlist.Front(); e != nil; e = e.Next() {
 		c := e.Value.(Contact)
 		comp := compare(c, item)
 		if comp == 0 {
-			log.Println("Not inserting: ", item.NodeID.AsString())
-			log.Println("Is equal to ", c.NodeID.AsString())
 			// don't insert duplicates
 			return
 		} else if comp == 1 {
@@ -67,11 +65,10 @@ func insertUnseenSorted(inputList *list.List, items [](Contact), compare func(Co
 	for i, _ := range items {
 		c := items[i]
 		if !alreadySeen[c.NodeID] {
-			log.Println("adding", c.NodeID.AsString())
+
 			insertSorted(inputList, c, compare)
 
 			if inputList.Len() == maxLength {
-				log.Println("Removing from shortList!!!!")
 				inputList.Remove(inputList.Back())
 			}
 		}

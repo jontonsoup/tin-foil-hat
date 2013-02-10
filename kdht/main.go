@@ -56,7 +56,12 @@ func main() {
 
 	log.Printf("pong msgID: %s\n", pong.MsgID.AsString())
 
-	foundNodes, err := kademlia.SendFindNode(kadem, kadem.NodeID, firstPeerStr)
+	_, err = kademlia.SendFindNode(kadem, kadem.NodeID, firstPeerStr)
+
+	var foundNodes []kademlia.Contact
+	if err == nil {
+		foundNodes, err = kademlia.IterativeFindNode(kadem, kadem.NodeID)
+	}
 
 	if err != nil {
 		log.Fatal("Bootstrap find_node error: ", err)
@@ -93,7 +98,7 @@ func runCommand(k *kademlia.Kademlia, s string) (err error) {
 		var address string
 
 		if len(fields) != 2 {
-			log.Printf("usage: ping [ip:port | NodeID]")
+			log.Println("usage: ping [ip:port | NodeID]")
 			return
 		}
 		localhostfmt := strings.Contains(fields[1], ":")
@@ -122,13 +127,13 @@ func runCommand(k *kademlia.Kademlia, s string) (err error) {
 		log.Printf("pong msgID: %s\n", pong.MsgID.AsString())
 	case "find_node":
 		if len(fields) != 2 {
-			log.Printf("usage: find_node key")
+			log.Println("usage: find_node key")
 			return
 		}
 
 		id, err := kademlia.FromString(fields[1])
 		if err != nil {
-			log.Printf("Invalid NodeID: ", fields[1])
+			log.Println("Invalid NodeID: ", fields[1])
 			return nil
 		}
 

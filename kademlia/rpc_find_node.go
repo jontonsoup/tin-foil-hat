@@ -78,7 +78,7 @@ func IterativeFindNode(k *Kademlia, searchID ID) ([]Contact, error) {
 	shortList := list.New()
 	alreadySeen := make(map[ID]bool)
 	initNodes := k.closestContacts(searchID, k.NodeID, ALPHA)
-	log.Println(len(initNodes), "closest contacts found", initNodes)
+
 	isCloser := func(c1 Contact, c2 Contact) int {
 		d1 := c1.NodeID.Xor(searchID)
 		d2 := c2.NodeID.Xor(searchID)
@@ -86,10 +86,6 @@ func IterativeFindNode(k *Kademlia, searchID ID) ([]Contact, error) {
 	}
 
 	insertUnseenSorted(shortList, initNodes, isCloser, alreadySeen, MAX_BUCKET_SIZE)
-	log.Println(shortList.Len(), "in the shortList")
-	for e := shortList.Front(); e != nil; e = e.Next() {
-		log.Println(e.Value.(Contact).NodeID.AsString(), "is in the shortlist")
-	}
 
 	for {
 
@@ -143,7 +139,7 @@ func (k *Kademlia) goFindNodes(searchNodes []Contact, searchID ID) <-chan Signed
 	outChan := make(chan SignedFoundNodes)
 
 	for _, node := range searchNodes {
-		log.Println("sending rpc to ", node.NodeID)
+
 		go func() {
 			foundNodes, err := SendFindNode(k, searchID, node.Address())
 			output := SignedFoundNodes{foundNodes, err, node}
