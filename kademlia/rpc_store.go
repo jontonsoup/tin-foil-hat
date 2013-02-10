@@ -1,10 +1,10 @@
 package kademlia
 
 import (
+	"errors"
 	"log"
 	"net/rpc"
 )
-
 
 // STORE
 type StoreRequest struct {
@@ -27,18 +27,26 @@ func (k *Kademlia) Store(req StoreRequest, res *StoreResult) error {
 	return nil
 }
 
-func (k *Kademlia) SendStore(req StoreRequest, address string) (res *StoreResult){
+func (k *Kademlia) SendStore(key ID, value []byte, address string) error {
 	client, err := rpc.DialHTTP("tcp", address)
 	log.Print("Sending Store ")
 	if err != nil {
 		return nil
 	}
-	res = new(StoreResult)
 
+	msgID := NewRandomID()
+	req := StoreRequest{k.Self, msgID, key, value}
+
+	var res StoreResult
 	err = client.Call("Kademlia.Store", req, &res)
 	if err != nil {
-		return
+		return err
 	}
 	defer client.Close()
-	return
+
+	return res.Err
+}
+
+func IterativeStore(k *Kademlia, key ID, value ID) error {
+	return errors.New("not implemented")
 }

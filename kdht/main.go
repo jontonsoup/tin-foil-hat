@@ -93,9 +93,6 @@ func runCommand(k *kademlia.Kademlia, s string) (err error) {
 	err = nil
 	switch fields[0] {
 
-	case "store":
-		kademlia.
-
 	case "get_node_id":
 		fmt.Printf("OK: %s\n", k.NodeID.AsString())
 	case "ping":
@@ -151,6 +148,19 @@ func runCommand(k *kademlia.Kademlia, s string) (err error) {
 		for _, node := range contacts {
 			fmt.Println("Ok: ", node.NodeID.AsString())
 		}
+	case "store":
+		if len(fields) != 2 {
+			log.Println("usage: store key value")
+			return
+		}
+
+		_, err := kademlia.FromString(fields[1])
+		if err != nil {
+			log.Println("Invalid Key: ", fields[1])
+			return nil
+		}
+
+		fmt.Println("not implemented")
 	default:
 		fmt.Println("Unrecognized command", fields[0])
 	}
