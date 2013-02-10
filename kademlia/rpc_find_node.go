@@ -53,7 +53,7 @@ func SendFindNode(k *Kademlia, nodeID ID, address string) ([]FoundNode, error) {
 
 	for _, node := range res.Nodes {
 		c := foundNodeToContact(&node)
-		k.updateContact(&c)
+		k.updateContact(c)
 	}
 	return res.Nodes, err
 }
@@ -63,7 +63,7 @@ func (k *Kademlia) FindNode(req FindNodeRequest, res *FindNodeResult) error {
 	log.Println("Handling FindNode request:", req)
 	// Find the k closest nodes to FindNodeRequest.NodeID and pack
 	// them in FindNodeResult.Nodes
-	k.updateContact(&req.Sender)
+	k.updateContact(req.Sender)
 
 	nodes := k.closestNodes(req.NodeID, req.Sender.NodeID, MAX_BUCKET_SIZE)
 
@@ -79,7 +79,7 @@ func IterativeFindNode(k *Kademlia, searchID ID) ([]Contact, error) {
 	alreadySeen := make(map[ID]bool)
 	initNodes := k.closestContacts(searchID, k.NodeID, ALPHA)
 	log.Println(len(initNodes), "closest contacts found", initNodes)
-	isCloser := func(c1 *Contact, c2 *Contact) int {
+	isCloser := func(c1 Contact, c2 Contact) int {
 		d1 := c1.NodeID.Xor(searchID)
 		d2 := c2.NodeID.Xor(searchID)
 		return d1.Compare(d2)
@@ -88,7 +88,7 @@ func IterativeFindNode(k *Kademlia, searchID ID) ([]Contact, error) {
 	insertUnseenSorted(shortList, initNodes, isCloser, alreadySeen, MAX_BUCKET_SIZE)
 	log.Println(shortList.Len(), "in the shortList")
 	for e := shortList.Front(); e != nil; e = e.Next() {
-		log.Println(e.Value.(*Contact).NodeID.AsString(), "is in the shortlist")
+		log.Println(e.Value.(Contact).NodeID.AsString(), "is in the shortlist")
 	}
 
 	for {
@@ -126,8 +126,8 @@ func IterativeFindNode(k *Kademlia, searchID ID) ([]Contact, error) {
 	closestNodes := make([]Contact, 0)
 
 	for e := shortList.Front(); e != nil; e = e.Next() {
-		c := e.Value.(*Contact)
-		closestNodes = append(closestNodes, *c)
+		c := e.Value.(Contact)
+		closestNodes = append(closestNodes, c)
 	}
 
 	return closestNodes, nil
@@ -136,7 +136,7 @@ func IterativeFindNode(k *Kademlia, searchID ID) ([]Contact, error) {
 type SignedFoundNodes struct {
 	FoundNodes []FoundNode
 	Err        error
-	searchNode *Contact
+	searchNode Contact
 }
 
 func (k *Kademlia) goFindNodes(searchNodes []Contact, searchID ID) <-chan SignedFoundNodes {
@@ -146,7 +146,7 @@ func (k *Kademlia) goFindNodes(searchNodes []Contact, searchID ID) <-chan Signed
 		log.Println("sending rpc to ", node.NodeID)
 		go func() {
 			foundNodes, err := SendFindNode(k, searchID, node.Address())
-			output := SignedFoundNodes{foundNodes, err, &node}
+			output := SignedFoundNodes{foundNodes, err, node}
 			outChan <- output
 		}()
 	}

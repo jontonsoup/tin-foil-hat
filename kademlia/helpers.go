@@ -24,7 +24,7 @@ func parseAddress(address string) (ip net.IP, port uint16, err error) {
 	return ip, port, nil
 }
 
-func contactToFoundNode(c *Contact) FoundNode {
+func contactToFoundNode(c Contact) FoundNode {
 	// create a FoundNode and return it
 	f := new(FoundNode)
 	f.IPAddr = c.Host.String()
@@ -43,10 +43,10 @@ func foundNodeToContact(f *FoundNode) Contact {
 }
 
 // doesn't insert contacts whose nodeID is already in the list
-func insertSorted(inputlist *list.List, item *Contact, compare func(*Contact, *Contact) int) {
+func insertSorted(inputlist *list.List, item Contact, compare func(Contact, Contact) int) {
 	log.Println("Trying to add ", item.NodeID.AsString())
 	for e := inputlist.Front(); e != nil; e = e.Next() {
-		c := e.Value.(*Contact)
+		c := e.Value.(Contact)
 		comp := compare(c, item)
 		if comp == 0 {
 			log.Println("Not inserting: ", item.NodeID.AsString())
@@ -63,12 +63,12 @@ func insertSorted(inputlist *list.List, item *Contact, compare func(*Contact, *C
 }
 
 // maxLength should be >= length of original inputList
-func insertUnseenSorted(inputList *list.List, items [](Contact), compare func(*Contact, *Contact) int, alreadySeen map[ID]bool, maxLength int) {
+func insertUnseenSorted(inputList *list.List, items [](Contact), compare func(Contact, Contact) int, alreadySeen map[ID]bool, maxLength int) {
 	for i, _ := range items {
 		c := items[i]
 		if !alreadySeen[c.NodeID] {
 			log.Println("adding", c.NodeID.AsString())
-			insertSorted(inputList, &c, compare)
+			insertSorted(inputList, c, compare)
 
 			if inputList.Len() == maxLength {
 				log.Println("Removing from shortList!!!!")
@@ -81,7 +81,7 @@ func insertUnseenSorted(inputList *list.List, items [](Contact), compare func(*C
 // assumes the id is only in the list once
 func removeFromSorted(l *list.List, id ID) {
 	for e := l.Front(); e != nil; e = e.Next() {
-		c := e.Value.(*Contact)
+		c := e.Value.(Contact)
 		if c.NodeID.Equals(id) {
 			l.Remove(e)
 			return
@@ -92,9 +92,9 @@ func removeFromSorted(l *list.List, id ID) {
 func getUnseen(l *list.List, alreadySeen map[ID]bool, max int) []Contact {
 	unseen := make([]Contact, 0)
 	for e := l.Front(); e != nil; e = e.Next() {
-		c := e.Value.(*Contact)
+		c := e.Value.(Contact)
 		if !alreadySeen[c.NodeID] {
-			unseen = append(unseen, *c)
+			unseen = append(unseen, c)
 			if len(unseen) == max {
 				break
 			}

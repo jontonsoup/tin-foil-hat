@@ -19,7 +19,7 @@ type Bucket struct {
 func (b *Bucket) lookupContact(id ID) (e *list.Element, ok bool) {
 
 	for e = b.contacts.Front(); e != nil; e = e.Next() {
-		c := e.Value.(*Contact)
+		c := e.Value.(Contact)
 		if c.NodeID.Equals(id) {
 			ok = true
 			return
