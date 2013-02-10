@@ -92,6 +92,10 @@ func runCommand(k *kademlia.Kademlia, s string) (err error) {
 	}
 	err = nil
 	switch fields[0] {
+
+	case "store":
+		kademlia.
+
 	case "get_node_id":
 		fmt.Printf("OK: %s\n", k.NodeID.AsString())
 	case "ping":

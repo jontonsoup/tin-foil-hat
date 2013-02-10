@@ -1,5 +1,11 @@
 package kademlia
 
+import (
+	"log"
+	"net/rpc"
+)
+
+
 // STORE
 type StoreRequest struct {
 	Sender Contact
@@ -19,4 +25,20 @@ func (k *Kademlia) Store(req StoreRequest, res *StoreResult) error {
 	k.Table[req.MsgID] = req.Value
 	res.Err = nil
 	return nil
+}
+
+func (k *Kademlia) SendStore(req StoreRequest, address string) (res *StoreResult){
+	client, err := rpc.DialHTTP("tcp", address)
+	log.Print("Sending Store ")
+	if err != nil {
+		return nil
+	}
+	res = new(StoreResult)
+
+	err = client.Call("Kademlia.Store", req, &res)
+	if err != nil {
+		return
+	}
+	defer client.Close()
+	return
 }
