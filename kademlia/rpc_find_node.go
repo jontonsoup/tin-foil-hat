@@ -59,8 +59,7 @@ func SendFindNode(k *Kademlia, nodeID ID, address string) ([]FoundNode, error) {
 }
 
 func (k *Kademlia) FindNode(req FindNodeRequest, res *FindNodeResult) error {
-	// TODO: Implement.
-	log.Println("Handling FindNode request:", req)
+	log.Println("Handling FindNode request from", req.Sender.Address())
 	// Find the k closest nodes to FindNodeRequest.NodeID and pack
 	// them in FindNodeResult.Nodes
 	k.updateContact(req.Sender)
@@ -90,7 +89,6 @@ func IterativeFindNode(k *Kademlia, searchID ID) ([]Contact, error) {
 	for {
 
 		nextSearchNodes := getUnseen(shortList, alreadySeen, ALPHA)
-
 		if len(nextSearchNodes) == 0 {
 			break
 		}
@@ -118,7 +116,6 @@ func IterativeFindNode(k *Kademlia, searchID ID) ([]Contact, error) {
 		}
 
 	}
-
 	closestNodes := make([]Contact, 0)
 
 	for e := shortList.Front(); e != nil; e = e.Next() {

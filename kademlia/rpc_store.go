@@ -1,7 +1,6 @@
 package kademlia
 
 import (
-	"errors"
 	"log"
 	"net/rpc"
 )
@@ -20,16 +19,17 @@ type StoreResult struct {
 }
 
 func (k *Kademlia) Store(req StoreRequest, res *StoreResult) error {
+	log.Println("Handling store request from", req.Sender.Address())
 	k.updateContact(req.Sender)
 	res.MsgID = req.MsgID
-	k.Table[req.MsgID] = req.Value
+	k.Table[req.Key] = req.Value
 	res.Err = nil
 	return nil
 }
 
-func (k *Kademlia) SendStore(key ID, value []byte, address string) error {
+func (k *Kademlia) sendStore(key ID, value []byte, address string) error {
 	client, err := rpc.DialHTTP("tcp", address)
-	log.Print("Sending Store ")
+	log.Println("Sending Store rpc to", address)
 	if err != nil {
 		return nil
 	}
@@ -47,6 +47,19 @@ func (k *Kademlia) SendStore(key ID, value []byte, address string) error {
 	return res.Err
 }
 
-func IterativeStore(k *Kademlia, key ID, value ID) error {
-	return errors.New("not implemented")
+func IterativeStore(k *Kademlia, key ID, value []byte) error {
+
+	k.Table[key] = value
+
+	nodes, err := IterativeFindNode(k, key)
+
+	if err != nil {
+		return err
+	}
+
+	for _, node := range nodes {
+		k.sendStore(key, value, node.Address())
+	}
+
+	return nil
 }

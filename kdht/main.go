@@ -95,6 +95,27 @@ func runCommand(k *kademlia.Kademlia, s string) (err error) {
 
 	case "get_node_id":
 		fmt.Printf("OK: %s\n", k.NodeID.AsString())
+	case "get_local_value":
+		if len(fields) != 2 {
+			fmt.Println("usage: get_local_value key")
+			return
+		}
+
+		key, err := kademlia.FromString(fields[1])
+
+		if err != nil {
+			fmt.Println("Invalid key: ", fields[1])
+			return nil
+		}
+
+		value, ok := kademlia.LocalLookup(k, key)
+
+		if ok {
+			fmt.Printf("OK: %v\n", string(value))
+
+		} else {
+			fmt.Printf("ERR\n")
+		}
 	case "ping":
 		var address string
 
@@ -149,18 +170,25 @@ func runCommand(k *kademlia.Kademlia, s string) (err error) {
 			fmt.Println("Ok: ", node.NodeID.AsString())
 		}
 	case "store":
-		if len(fields) != 2 {
+		if len(fields) != 3 {
 			log.Println("usage: store key value")
 			return
 		}
 
-		_, err := kademlia.FromString(fields[1])
+		key, err := kademlia.FromString(fields[1])
 		if err != nil {
 			log.Println("Invalid Key: ", fields[1])
 			return nil
 		}
 
-		fmt.Println("not implemented")
+		value := []byte(fields[2])
+
+		err = kademlia.IterativeStore(k, key, value)
+
+		if err == nil {
+			fmt.Println("OK")
+		}
+
 	default:
 		fmt.Println("Unrecognized command", fields[0])
 	}

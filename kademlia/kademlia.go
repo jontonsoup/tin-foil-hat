@@ -28,6 +28,11 @@ func NewKademlia(address string) *Kademlia {
 	return newKademliaSplitAddress(ip, port)
 }
 
+func LocalLookup(k *Kademlia, key ID) ([]byte, bool) {
+	val, ok := k.Table[key]
+	return val, ok
+}
+
 func newKademliaSplitAddress(ip net.IP, port uint16) *Kademlia {
 	k := new(Kademlia)
 	k.NodeID = NewRandomID()
