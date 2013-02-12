@@ -93,11 +93,11 @@ func runCommand(k *kademlia.Kademlia, s string) (err error) {
 	err = nil
 	switch fields[0] {
 
-	case "get_node_id":
+	case "whoami":
 		fmt.Printf("OK: %s\n", k.NodeID.AsString())
-	case "get_local_value":
+	case "local_find_value":
 		if len(fields) != 2 {
-			fmt.Println("usage: get_local_value key")
+			fmt.Println("usage: local_find_value key")
 			return
 		}
 
@@ -116,6 +116,26 @@ func runCommand(k *kademlia.Kademlia, s string) (err error) {
 		} else {
 			fmt.Printf("ERR\n")
 		}
+	case "get_contact":
+		if len(fields) != 2 {
+			fmt.Println("usage: get_contact ID")
+			return nil
+		}
+
+		nodeID, err := kademlia.FromString(fields[1])
+
+		if err != nil {
+			fmt.Println("Invalid nodeID:", fields[1])
+			return nil
+		}
+
+		c, ok := kademlia.LookupContact(k, nodeID)
+
+		if ok {
+			fmt.Printf("%v %v\n", c.Host, c.Port)
+			return nil
+		}
+		fmt.Println("ERR")
 	case "ping":
 		var address string
 
@@ -147,9 +167,9 @@ func runCommand(k *kademlia.Kademlia, s string) (err error) {
 			return err
 		}
 		log.Printf("pong msgID: %s\n", pong.MsgID.AsString())
-	case "find_node":
+	case "iterativeFindNode":
 		if len(fields) != 2 {
-			log.Println("usage: find_node key")
+			log.Println("usage: iterativeFindNode key")
 			return
 		}
 
@@ -165,13 +185,16 @@ func runCommand(k *kademlia.Kademlia, s string) (err error) {
 			return err
 		}
 
-		log.Println(len(contacts), "contacts found")
-		for _, node := range contacts {
-			fmt.Println("Ok: ", node.NodeID.AsString())
+		ids := make([]kademlia.ID, len(contacts))
+
+		for i, c := range contacts {
+			ids[i] = c.NodeID
 		}
-	case "store":
+
+		fmt.Printf("%v", ids)
+	case "iterativeStore":
 		if len(fields) != 3 {
-			log.Println("usage: store key value")
+			log.Println("usage: iterativeStore key value")
 			return
 		}
 
