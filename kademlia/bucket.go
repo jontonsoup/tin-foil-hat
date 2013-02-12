@@ -2,7 +2,6 @@ package kademlia
 
 import (
 	"container/list"
-	"log"
 )
 
 /*
@@ -18,17 +17,15 @@ type Bucket struct {
 
 // if a contact with the given id is present, return that contact
 func (b *Bucket) lookupContact(id ID) (e *list.Element, ok bool) {
-	log.Print("Looking up ", id.AsString())
+
 	for e = b.contacts.Front(); e != nil; e = e.Next() {
-		c := e.Value.(*Contact)
-		log.Print("Checking: ", c.NodeID.AsString())
+		c := e.Value.(Contact)
 		if c.NodeID.Equals(id) {
 			ok = true
 			return
-		} else {
-			log.Println("not equal: ", c.NodeID.AsString(), id.AsString())
 		}
 	}
+
 	ok = false
 	return
 }

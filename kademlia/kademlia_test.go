@@ -17,9 +17,9 @@ func ExampleBucket() {
 	c.Port = 7970
 	c.Host = net.ParseIP("127.0.0.1")
 	b := new(Bucket)
-	b.contacts.PushBack(c)
+	b.contacts.PushBack(*c)
 	val := b.contacts.Back().Value
-	cval := val.(*Contact)
+	cval := val.(Contact)
 	fmt.Println(cval.Host)
 	fmt.Println(cval.Port)
 	// Output:
@@ -56,7 +56,7 @@ func TestAddContact(t *testing.T) {
 	index := k.index(c.NodeID)
 	k.Buckets[index] = *b
 	// add contact
-	k.updateContact(c)
+	k.updateContact(*c)
 	if k.Buckets[index].contacts.Len() == 0 {
 		t.Fail()
 	}
@@ -98,7 +98,7 @@ func ExampleContactToFoundNode() {
 	c.NodeID = OnesID()
 	c.Port = 7970
 	c.Host = net.ParseIP("127.0.0.1")
-	f := contactToFoundNode(c)
+	f := contactToFoundNode(*c)
 	fmt.Println(f.IPAddr)
 	fmt.Println(f.NodeID)
 	fmt.Println(f.Port)
@@ -153,49 +153,49 @@ func TestDoInSearchOrder(t *testing.T) {
 
 }
 
-func bootupKademlia(listenStr string, firstPeerStr string) *Kademlia {
-	// By default, Go seeds its RNG with 1. This would cause every program to
-	// generate the same sequence of IDs.
-	rand.Seed(time.Now().UnixNano())
+// func bootupKademlia(listenStr string, firstPeerStr string) *Kademlia {
+// 	// By default, Go seeds its RNG with 1. This would cause every program to
+// 	// generate the same sequence of IDs.
+// 	rand.Seed(time.Now().UnixNano())
 
-	kadem := NewKademlia(listenStr)
+// 	kadem := NewKademlia(listenStr)
 
-	rpc.Register(kadem)
-	rpc.HandleHTTP()
-	l, err := net.Listen("tcp", listenStr)
-	if err != nil {
-		log.Fatal("Listen: ", err)
-	}
+// 	rpc.Register(kadem)
+// 	rpc.HandleHTTP()
+// 	l, err := net.Listen("tcp", listenStr)
+// 	if err != nil {
+// 		log.Fatal("Listen: ", err)
+// 	}
 
-	// Serve forever.
-	go http.Serve(l, nil)
+// 	// Serve forever.
+// 	go http.Serve(l, nil)
 
-	// Confirm our server is up with a PING request and then exit.
-	// Your code should loop forever, reading instructions from stdin and
-	// printing their results to stdout. See README.txt for more details.
-	pong, err := SendPing(kadem, firstPeerStr)
-	if err != nil {
-		log.Fatal("Initial ping error: ", err)
-	}
+// 	// Confirm our server is up with a PING request and then exit.
+// 	// Your code should loop forever, reading instructions from stdin and
+// 	// printing their results to stdout. See README.txt for more details.
+// 	pong, err := SendPing(kadem, firstPeerStr)
+// 	if err != nil {
+// 		log.Fatal("Initial ping error: ", err)
+// 	}
 
-	log.Printf("pong msgID: %s\n", pong.MsgID.AsString())
+// 	log.Printf("pong msgID: %s\n", pong.MsgID.AsString())
 
-	foundNodes, err := SendFindNode(kadem, kadem.NodeID, firstPeerStr)
+// 	foundNodes, err := SendFindNode(kadem, kadem.NodeID, firstPeerStr)
 
-	if err != nil {
-		log.Fatal("Bootstrap find_node error: ", err)
-	}
+// 	if err != nil {
+// 		log.Fatal("Bootstrap find_node error: ", err)
+// 	}
 
-	log.Println("Received", len(foundNodes), "nodes")
-	for i, node := range foundNodes {
-		log.Println("Node ", i, ": ", node.NodeID.AsString())
-	}
-	return kadem
-}
+// 	log.Println("Received", len(foundNodes), "nodes")
+// 	for i, node := range foundNodes {
+// 		log.Println("Node ", i, ": ", node.NodeID.AsString())
+// 	}
+// 	return kadem
+// }
 
-func TestDoStore(t *testing.T) {
+// func TestDoStore(t *testing.T) {
 
-	bootupKademlia("127.0.0.1:8890", "127.0.0.1:8090")
-	//bootupKademlia("127.0.0.1:8891", "127.0.0.1:8890")
+// 	bootupKademlia("127.0.0.1:8890", "127.0.0.1:8090")
+// 	//bootupKademlia("127.0.0.1:8891", "127.0.0.1:8890")
 
-}
+// }

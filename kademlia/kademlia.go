@@ -10,6 +10,7 @@ import (
 // as a receiver for the RPC methods, which is required by that package.
 
 const NUM_BUCKETS = IDBytes*8 + 1
+const ALPHA = 3
 
 // Core Kademlia type. You can put whatever state you want in this.
 type Kademlia struct {
@@ -27,18 +28,23 @@ func NewKademlia(address string) *Kademlia {
 	return newKademliaSplitAddress(ip, port)
 }
 
+func LocalLookup(k *Kademlia, key ID) ([]byte, bool) {
+	val, ok := k.Table[key]
+	return val, ok
+}
+
 func newKademliaSplitAddress(ip net.IP, port uint16) *Kademlia {
 	k := new(Kademlia)
 	k.NodeID = NewRandomID()
 	k.Self = Contact{k.NodeID, ip, port}
-	k.updateContact(&k.Self)
+	k.updateContact(k.Self)
 	k.Table = make(map[ID][]byte)
 	return k
 }
 
 // Correctly updates the bucket given that the contact given has just
 // been observed
-func (k *Kademlia) updateContact(c *Contact) {
+func (k *Kademlia) updateContact(c Contact) {
 	index := k.index(c.NodeID)
 	b := &k.Buckets[index]
 
@@ -50,7 +56,7 @@ func (k *Kademlia) updateContact(c *Contact) {
 		} else {
 			// ping the least recently seen node
 			firstEl := b.contacts.Front()
-			first := firstEl.Value.(*Contact)
+			first := firstEl.Value.(Contact)
 			_, err := SendPing(k, first.Address())
 			if err != nil {
 				log.Println("Old node responded, ignoring new contact")
@@ -63,7 +69,6 @@ func (k *Kademlia) updateContact(c *Contact) {
 			}
 		}
 	} else {
-		log.Print("Previously seen contact recently seen: ", c.NodeID.AsString())
 		// Move contact to most recently seen in the bucket.
 		b.contacts.MoveToBack(e)
 	}
@@ -74,20 +79,18 @@ func (k *Kademlia) index(id ID) int {
 	return k.NodeID.Xor(id).PrefixLen()
 }
 
-func (k *Kademlia) closestNodes(searchID ID, excludedID ID, amount int) ([]FoundNode, error) {
-	cs, err := k.closestContacts(searchID, excludedID, amount)
-	if err != nil {
-		return nil, err
-	}
+func (k *Kademlia) closestNodes(searchID ID, excludedID ID, amount int) []FoundNode {
+	cs := k.closestContacts(searchID, excludedID, amount)
+
 	nodes := make([]FoundNode, len(cs))
 
 	for i, c := range cs {
-		nodes[i] = contactToFoundNode(&c)
+		nodes[i] = contactToFoundNode(c)
 	}
-	return nodes, nil
+	return nodes
 }
 
-func (k *Kademlia) closestContacts(searchID ID, excludedID ID, amount int) (contacts []Contact, err error) {
+func (k *Kademlia) closestContacts(searchID ID, excludedID ID, amount int) (contacts []Contact) {
 	contacts = make([]Contact, 0)
 
 	k.doInSearchOrder(searchID, func(index int) bool {
@@ -98,18 +101,18 @@ func (k *Kademlia) closestContacts(searchID ID, excludedID ID, amount int) (cont
 
 		//sort that list |suspect|
 		for e := currentBucket.Front(); e != nil; e = e.Next() {
-			InsertSorted(sortedList, e.Value.(*Contact), func(first *Contact, second *Contact) bool {
+			insertSorted(sortedList, e.Value.(Contact), func(first Contact, second Contact) int {
 				firstDistance := first.NodeID.Xor(searchID)
 				secondDistance := second.NodeID.Xor(searchID)
-				return firstDistance.Compare(secondDistance) == 1
+				return firstDistance.Compare(secondDistance)
 			})
 		}
 
 		// (^._.^)~ kirby says add as much as you can to output slice
 		for e := sortedList.Front(); e != nil; e = e.Next() {
-			c := e.Value.(*Contact)
+			c := e.Value.(Contact)
 			if !c.NodeID.Equals(excludedID) {
-				contacts = append(contacts, *c)
+				contacts = append(contacts, c)
 				// if the slice is full, break
 				if len(contacts) == amount {
 					return false
@@ -122,7 +125,7 @@ func (k *Kademlia) closestContacts(searchID ID, excludedID ID, amount int) (cont
 	return
 }
 
-func LookupContact(k *Kademlia, id ID) (c *Contact, ok bool) {
+func LookupContact(k *Kademlia, id ID) (c Contact, ok bool) {
 	index := k.index(id)
 	if index >= len(k.Buckets) {
 		ok = false
@@ -131,7 +134,7 @@ func LookupContact(k *Kademlia, id ID) (c *Contact, ok bool) {
 	bucket := &k.Buckets[index]
 	e, ok := bucket.lookupContact(id)
 	if ok {
-		c = e.Value.(*Contact)
+		c = e.Value.(Contact)
 	}
 	return
 }
@@ -140,7 +143,6 @@ func (k *Kademlia) doInSearchOrder(id ID, usrFunc func(int) bool) {
 	// produce the indices for the closest k-buckets to the id
 	ones := k.NodeID.Xor(id).OnesIndices()
 
-	log.Println("Searching for ones")
 	for i := 0; i < NUM_BUCKETS; i++ {
 		if ones[i] {
 			if !usrFunc(i) {
@@ -149,7 +151,6 @@ func (k *Kademlia) doInSearchOrder(id ID, usrFunc func(int) bool) {
 		}
 	}
 
-	log.Println("Searching for zeros")
 	for i := NUM_BUCKETS - 1; i >= 0; i-- {
 		if !ones[i] {
 			if !usrFunc(i) {
@@ -158,5 +159,4 @@ func (k *Kademlia) doInSearchOrder(id ID, usrFunc func(int) bool) {
 		}
 	}
 
-	log.Println("Done searching")
 }

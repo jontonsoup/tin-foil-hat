@@ -12,6 +12,6 @@ type Contact struct {
 	Port   uint16
 }
 
-func (c *Contact) Address() string {
+func (c Contact) Address() string {
 	return c.Host.String() + ":" + strconv.FormatUint(uint64(c.Port), 10)
 }
