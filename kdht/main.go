@@ -211,6 +211,35 @@ func runCommand(k *kademlia.Kademlia, s string) (err error) {
 		if err == nil {
 			fmt.Println("OK")
 		}
+	case "store":
+		if len(fields) != 4 {
+			log.Println("usage: store nodeID key value")
+			return
+		}
+		err = kademlia.sendStore(k, fields[3], fields[1], fields[2])
+		if err == nil {
+			fmt.Println("OK")
+		}
+
+	case "find_node":
+		if len(fields) != 3 {
+			log.Println("usage: find_node key value")
+			return
+		}
+		err = kademlia.SendFindValue(k, fields[1], fields[2])
+		if err == nil {
+			fmt.Println("OK")
+		}
+
+	case "find_value":
+		if len(fields) != 3 {
+			log.Println("usage: find_value key value")
+			return
+		}
+		err = kademlia.SendFindValue(k, fields[1], fields[2])
+		if err == nil {
+			fmt.Println("OK")
+		}
 
 	default:
 		fmt.Println("Unrecognized command", fields[0])
