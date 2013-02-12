@@ -20,6 +20,24 @@ type FindValueResult struct {
 	Err   error
 }
 
+
+func SendFindValue(k *Kademlia, key ID, nodeID ID) (ret *FindValueResult, err error){
+	contact := LookupContact(k, nodeID)
+	client, err := rpc.DialHTTP("tcp", contact.Address())
+	if err != nil {
+		return
+	}
+	req := new(FindValueRequest)
+	req.MsgID = NewRandomID()
+	req.Sender = k.Self
+	err = client.Call("Kademlia.FindValue", req, &ret)
+	defer client.Close()
+	if !ret.MsgID.Equals(ping.MsgID) {
+		err = errors.New("FindValue MsgID didn't match SendFindValue MsgID")
+	}
+	return
+}
+
 func (k *Kademlia) FindValue(req FindValueRequest, res *FindValueResult) error {
 	// return value for FindValueRequest.Key; if not found, return k closest nodes
 	// be sure to fill up res.MsgID with req.MsgID!
