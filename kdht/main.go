@@ -167,9 +167,9 @@ func runCommand(k *kademlia.Kademlia, s string) (err error) {
 			return err
 		}
 		log.Printf("pong msgID: %s\n", pong.MsgID.AsString())
-	case "find_node":
+	case "iterativeFindNode":
 		if len(fields) != 2 {
-			log.Println("usage: find_node key")
+			log.Println("usage: iterativeFindNode key")
 			return
 		}
 
@@ -185,13 +185,16 @@ func runCommand(k *kademlia.Kademlia, s string) (err error) {
 			return err
 		}
 
-		log.Println(len(contacts), "contacts found")
-		for _, node := range contacts {
-			fmt.Println("Ok: ", node.NodeID.AsString())
+		ids := make([]kademlia.ID, len(contacts))
+
+		for i, c := range contacts {
+			ids[i] = c.NodeID
 		}
-	case "store":
+
+		fmt.Printf("%v", ids)
+	case "iterativeStore":
 		if len(fields) != 3 {
-			log.Println("usage: store key value")
+			log.Println("usage: iterativeStore key value")
 			return
 		}
 
