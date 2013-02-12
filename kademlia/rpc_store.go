@@ -19,12 +19,8 @@ type StoreResult struct {
 }
 
 func (k *Kademlia) Store(req StoreRequest, res *StoreResult) error {
-<<<<<<< HEAD
-	k.updateContact(&req.Sender)
-=======
 	log.Println("Handling store request from", req.Sender.Address())
 	k.updateContact(req.Sender)
->>>>>>> 7cdba3c2b6b9f427243582771905375407810327
 	res.MsgID = req.MsgID
 	k.Table[req.Key] = req.Value
 	res.Err = nil
