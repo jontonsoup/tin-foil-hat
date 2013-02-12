@@ -93,7 +93,7 @@ func runCommand(k *kademlia.Kademlia, s string) (err error) {
 	err = nil
 	switch fields[0] {
 
-	case "get_node_id":
+	case "whoami":
 		fmt.Printf("OK: %s\n", k.NodeID.AsString())
 	case "get_local_value":
 		if len(fields) != 2 {
