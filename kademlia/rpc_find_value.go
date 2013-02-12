@@ -2,6 +2,7 @@ package kademlia
 
 import (
 	"errors"
+	"net/rpc"
 )
 
 // FIND_VALUE
@@ -22,7 +23,7 @@ type FindValueResult struct {
 
 
 func SendFindValue(k *Kademlia, key ID, nodeID ID) (ret *FindValueResult, err error){
-	contact := LookupContact(k, nodeID)
+	contact, _ := LookupContact(k, nodeID)
 	client, err := rpc.DialHTTP("tcp", contact.Address())
 	if err != nil {
 		return
@@ -32,7 +33,7 @@ func SendFindValue(k *Kademlia, key ID, nodeID ID) (ret *FindValueResult, err er
 	req.Sender = k.Self
 	err = client.Call("Kademlia.FindValue", req, &ret)
 	defer client.Close()
-	if !ret.MsgID.Equals(ping.MsgID) {
+	if !ret.MsgID.Equals(ret.MsgID) {
 		err = errors.New("FindValue MsgID didn't match SendFindValue MsgID")
 	}
 	return
@@ -43,7 +44,7 @@ func (k *Kademlia) FindValue(req FindValueRequest, res *FindValueResult) error {
 	// be sure to fill up res.MsgID with req.MsgID!
 
 	// update contact!
-	k.updateContact(&req.Sender)
+	k.updateContact(req.Sender)
 
 	if val, ok := k.Table[req.Key]; ok {
 		// return value
