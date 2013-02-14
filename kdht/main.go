@@ -54,9 +54,9 @@ func main() {
 		log.Fatal("Initial ping error: ", err)
 	}
 
-	log.Printf("pong msgID: %s\n", pong.MsgID.AsString())
+	fmt.Printf("pong msgID: %s\n", pong.MsgID.AsString())
 
-	_, err = kademlia.SendFindNode(kadem, kadem.NodeID, firstPeerStr)
+	_, err = kademlia.SendFindNodeAddr(kadem, kadem.NodeID, firstPeerStr)
 
 	var foundNodes []kademlia.Contact
 	if err == nil {
@@ -67,9 +67,9 @@ func main() {
 		log.Fatal("Bootstrap find_node error: ", err)
 	}
 
-	log.Println("Received", len(foundNodes), "nodes")
+	fmt.Println("Received", len(foundNodes), "nodes")
 	for i, node := range foundNodes {
-		log.Println("Node ", i, ": ", node.NodeID.AsString())
+		fmt.Println("Node ", i, ": ", node.NodeID.AsString())
 	}
 
 	r := bufio.NewReader(os.Stdin)
@@ -78,23 +78,20 @@ func main() {
 		if err != nil {
 			fmt.Println(err)
 		}
-		err = runCommand(kadem, line)
-		if err != nil {
-			fmt.Println(err)
-		}
+		runCommand(kadem, line)
 	}
 }
 
-func runCommand(k *kademlia.Kademlia, s string) (err error) {
+func runCommand(k *kademlia.Kademlia, s string) {
 	fields := strings.Fields(s)
 	if len(fields) == 0 {
-		return nil
+		return
 	}
-	err = nil
+
 	switch fields[0] {
 
 	case "whoami":
-		fmt.Printf("OK: %s\n", k.NodeID.AsString())
+		fmt.Printf("%v\n", k.NodeID.AsString())
 	case "local_find_value":
 		if len(fields) != 2 {
 			fmt.Println("usage: local_find_value key")
@@ -105,13 +102,13 @@ func runCommand(k *kademlia.Kademlia, s string) (err error) {
 
 		if err != nil {
 			fmt.Println("Invalid key: ", fields[1])
-			return nil
+			return
 		}
 
 		value, ok := kademlia.LocalLookup(k, key)
 
 		if ok {
-			fmt.Printf("OK: %v\n", string(value))
+			fmt.Printf("%v\n", string(value))
 
 		} else {
 			fmt.Printf("ERR\n")
@@ -119,28 +116,28 @@ func runCommand(k *kademlia.Kademlia, s string) (err error) {
 	case "get_contact":
 		if len(fields) != 2 {
 			fmt.Println("usage: get_contact ID")
-			return nil
+			return
 		}
 
 		nodeID, err := kademlia.FromString(fields[1])
 
 		if err != nil {
 			fmt.Println("Invalid nodeID:", fields[1])
-			return nil
+			return
 		}
 
 		c, ok := kademlia.LookupContact(k, nodeID)
 
 		if ok {
 			fmt.Printf("%v %v\n", c.Host, c.Port)
-			return nil
+			return
 		}
 		fmt.Println("ERR")
 	case "ping":
 		var address string
 
 		if len(fields) != 2 {
-			log.Println("usage: ping [ip:port | NodeID]")
+			fmt.Println("usage: ping [ip:port | NodeID]")
 			return
 		}
 		localhostfmt := strings.Contains(fields[1], ":")
@@ -149,14 +146,13 @@ func runCommand(k *kademlia.Kademlia, s string) (err error) {
 		} else {
 			id, err := kademlia.FromString(fields[1])
 			if err != nil {
-				log.Println("usage: ping [ip:port | NodeID]")
-				return nil
+				fmt.Println("usage: ping [ip:port | NodeID]")
+				return
 			}
 			if c, ok := kademlia.LookupContact(k, id); !ok {
-				log.Println("Node not found")
-				return nil
+				fmt.Println("Node not found")
+				return
 			} else {
-				log.Println("Found contact ", c)
 				address = c.Host.String() + ":" +
 					strconv.FormatUint(uint64(c.Port), 10)
 			}
@@ -164,25 +160,27 @@ func runCommand(k *kademlia.Kademlia, s string) (err error) {
 		}
 		pong, err := kademlia.SendPing(k, address)
 		if err != nil {
-			return err
+			fmt.Println("Ping error:", err)
+			return
 		}
-		log.Printf("pong msgID: %s\n", pong.MsgID.AsString())
+		fmt.Printf("pong msgID: %v\n", pong.MsgID.AsString())
 	case "iterativeFindNode":
 		if len(fields) != 2 {
-			log.Println("usage: iterativeFindNode key")
+			fmt.Println("usage: iterativeFindNode key")
 			return
 		}
 
 		id, err := kademlia.FromString(fields[1])
 		if err != nil {
-			log.Println("Invalid NodeID: ", fields[1])
-			return nil
+			fmt.Println("Invalid NodeID: ", fields[1])
+			return
 		}
 
 		contacts, err := kademlia.IterativeFindNode(k, id)
 
 		if err != nil {
-			return err
+			fmt.Println("Iterative find node error:", err)
+			return
 		}
 
 		ids := make([]kademlia.ID, len(contacts))
@@ -191,55 +189,121 @@ func runCommand(k *kademlia.Kademlia, s string) (err error) {
 			ids[i] = c.NodeID
 		}
 
-		fmt.Printf("%v", ids)
+		// TODO: make sure this is right, it looks really dumb
+		fmt.Printf("%v\n", ids)
 	case "iterativeStore":
 		if len(fields) != 3 {
-			log.Println("usage: iterativeStore key value")
+			fmt.Println("usage: iterativeStore key value")
 			return
 		}
 
 		key, err := kademlia.FromString(fields[1])
 		if err != nil {
-			log.Println("Invalid Key: ", fields[1])
-			return nil
+			fmt.Println("Invalid Key: ", fields[1])
+			return
 		}
 
 		value := []byte(fields[2])
 
-		err = kademlia.IterativeStore(k, key, value)
+		lastID, err := kademlia.IterativeStore(k, key, value)
 
 		if err == nil {
-			fmt.Println("OK")
+			fmt.Println(lastID.AsString())
 		}
+	case "iterativeFindValue":
+		// TODO
+		fmt.Println("NOT IMPLEMENTED")
 	case "store":
 		if len(fields) != 4 {
-			log.Println("usage: store nodeID key value")
+			fmt.Println("usage: store nodeID key value")
 			return
 		}
-		err = kademlia.sendStore(k, fields[3], fields[1], fields[2])
+		nodeID, err := kademlia.FromString(fields[1])
+		if err != nil {
+			fmt.Println("Invalid nodeID: ", fields[1])
+			return
+		}
+		key, err := kademlia.FromString(fields[2])
+		if err != nil {
+			fmt.Println("Invalid key: ", fields[2])
+			return
+		}
+		value := []byte(fields[3])
+
+		err = kademlia.SendStore(k, key, value, nodeID)
 		if err == nil {
-			fmt.Println("OK")
+			fmt.Println()
+		} else {
+			fmt.Println("ERR")
 		}
 
 	case "find_node":
 		if len(fields) != 3 {
-			log.Println("usage: find_node key value")
+			fmt.Println("usage: find_node nodeID searchID")
 			return
 		}
-		err = kademlia.SendFindValue(k, fields[1], fields[2])
-		if err == nil {
-			fmt.Println("OK")
+		nodeID, err := kademlia.FromString(fields[1])
+		if err != nil {
+			fmt.Println("Invalid nodeID:", fields[1])
+			return
 		}
+		searchID, err := kademlia.FromString(fields[2])
+		if err != nil {
+			fmt.Println("Invalid nodeID:", fields[2])
+			return
+		}
+
+		nodes, err := kademlia.SendFindNode(k, searchID, nodeID)
+		if err != nil {
+			fmt.Println("ERR:", err)
+			return
+		}
+		ids := make([]kademlia.ID, len(nodes))
+
+		for i, node := range nodes {
+			ids[i] = node.NodeID
+		}
+
+		// TODO: make sure this is right, it looks really dumb
+		fmt.Printf("%v\n", ids)
 
 	case "find_value":
 		if len(fields) != 3 {
-			log.Println("usage: find_value key value")
+			fmt.Println("usage: find_value nodeID key")
 			return
 		}
-		err = kademlia.SendFindValue(k, fields[1], fields[2])
-		if err == nil {
-			fmt.Println("OK")
+		nodeID, err := kademlia.FromString(fields[1])
+		if err != nil {
+			fmt.Println("Invalid nodeID:", fields[1])
+			return
 		}
+		key, err := kademlia.FromString(fields[2])
+		if err != nil {
+			fmt.Println("Invalid nodeID:", fields[2])
+			return
+		}
+
+		findValResult, err := kademlia.SendFindValue(k, key, nodeID)
+
+		if err != nil {
+			fmt.Println("error:", err)
+			return
+		}
+		if findValResult.Value != nil {
+			fmt.Printf("%v %v\n", nodeID.AsString(), string(findValResult.Value))
+			return
+		}
+
+		contacts := findValResult.Nodes
+		// otherwise print all the found nodes
+		ids := make([]kademlia.ID, len(contacts))
+
+		for i, c := range contacts {
+			ids[i] = c.NodeID
+		}
+
+		// TODO: make sure this is right, it looks really dumb
+		fmt.Printf("%v\n", ids)
 
 	default:
 		fmt.Println("Unrecognized command", fields[0])

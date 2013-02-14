@@ -2,6 +2,7 @@ package kademlia
 
 import (
 	"errors"
+	"log"
 	"net/rpc"
 )
 
@@ -21,8 +22,7 @@ type FindValueResult struct {
 	Err   error
 }
 
-
-func SendFindValue(k *Kademlia, key ID, nodeID ID) (ret *FindValueResult, err error){
+func SendFindValue(k *Kademlia, key ID, nodeID ID) (ret *FindValueResult, err error) {
 	contact, _ := LookupContact(k, nodeID)
 	client, err := rpc.DialHTTP("tcp", contact.Address())
 	if err != nil {
@@ -31,7 +31,11 @@ func SendFindValue(k *Kademlia, key ID, nodeID ID) (ret *FindValueResult, err er
 	req := new(FindValueRequest)
 	req.MsgID = NewRandomID()
 	req.Sender = k.Self
+	req.Key = key
 	err = client.Call("Kademlia.FindValue", req, &ret)
+	if err != nil {
+		return
+	}
 	defer client.Close()
 	if !ret.MsgID.Equals(ret.MsgID) {
 		err = errors.New("FindValue MsgID didn't match SendFindValue MsgID")
@@ -53,12 +57,14 @@ func (k *Kademlia) FindValue(req FindValueRequest, res *FindValueResult) error {
 		res.Err = nil
 		res.Nodes = nil
 	} else {
+		log.Println("No value for key:", req.Key.AsString())
 		// return closest nodes
 		res.MsgID = req.MsgID
 		res.Value = nil
 		res.Err = nil
 		// run FindNode rpc, by calling SendFindNode
-		var find_node_res *FindNodeResult
+		// var find_node_res *FindNodeResult
+		find_node_res := new(FindNodeResult)
 		msgID := NewRandomID()
 		find_node_req := FindNodeRequest{req.Sender, msgID, req.Key}
 		err := k.FindNode(find_node_req, find_node_res)

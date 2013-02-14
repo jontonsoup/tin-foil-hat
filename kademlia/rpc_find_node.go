@@ -26,7 +26,17 @@ type FindNodeResult struct {
 	Err   error
 }
 
-func SendFindNode(k *Kademlia, nodeID ID, address string) ([]FoundNode, error) {
+func SendFindNode(k *Kademlia, searchNodeID ID, recipID ID) (nodes []FoundNode, err error) {
+	c, ok := LookupContact(k, recipID)
+	if !ok {
+		err = errors.New("unkown recipient nodeID")
+		return
+	}
+	nodes, err = SendFindNodeAddr(k, searchNodeID, c.Address())
+	return
+}
+
+func SendFindNodeAddr(k *Kademlia, nodeID ID, address string) ([]FoundNode, error) {
 	// TODO
 	// send a findNode rpc and return the k-closest nodes
 	log.Println("Sending FindNode rpc to ", address)
@@ -138,7 +148,7 @@ func (k *Kademlia) goFindNodes(searchNodes []Contact, searchID ID) <-chan Signed
 	for _, node := range searchNodes {
 
 		go func() {
-			foundNodes, err := SendFindNode(k, searchID, node.Address())
+			foundNodes, err := SendFindNode(k, searchID, node.NodeID)
 			output := SignedFoundNodes{foundNodes, err, node}
 			outChan <- output
 		}()

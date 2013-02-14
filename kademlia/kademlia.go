@@ -15,9 +15,9 @@ const ALPHA = 3
 // Core Kademlia type. You can put whatever state you want in this.
 type Kademlia struct {
 	NodeID  ID
-	Buckets [NUM_BUCKETS]Bucket
+	Buckets [NUM_BUCKETS]Bucket // TODO: refreshes
 	Self    Contact
-	Table   map[ID][]byte
+	Table   map[ID][]byte // TODO: republishes
 }
 
 func NewKademlia(address string) *Kademlia {

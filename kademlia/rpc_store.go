@@ -1,6 +1,7 @@
 package kademlia
 
 import (
+	"errors"
 	"log"
 	"net/rpc"
 )
@@ -27,7 +28,13 @@ func (k *Kademlia) Store(req StoreRequest, res *StoreResult) error {
 	return nil
 }
 
-func (k *Kademlia) sendStore(key ID, value []byte, address string) error {
+func SendStore(k *Kademlia, key ID, value []byte, nodeID ID) error {
+	c, ok := LookupContact(k, nodeID)
+	if !ok {
+		return errors.New("node not found")
+	}
+	address := c.Address()
+
 	client, err := rpc.DialHTTP("tcp", address)
 	log.Println("Sending Store rpc to", address)
 	if err != nil {
@@ -47,19 +54,20 @@ func (k *Kademlia) sendStore(key ID, value []byte, address string) error {
 	return res.Err
 }
 
-func IterativeStore(k *Kademlia, key ID, value []byte) error {
+func IterativeStore(k *Kademlia, key ID, value []byte) (lastID ID, err error) {
 
 	k.Table[key] = value
 
 	nodes, err := IterativeFindNode(k, key)
 
 	if err != nil {
-		return err
+		return
 	}
 
 	for _, node := range nodes {
-		k.sendStore(key, value, node.Address())
+		SendStore(k, key, value, node.NodeID)
 	}
+	lastID = nodes[len(nodes)-1].NodeID
 
-	return nil
+	return
 }
