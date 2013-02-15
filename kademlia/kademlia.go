@@ -37,6 +37,12 @@ func newKademliaSplitAddress(ip net.IP, port uint16) *Kademlia {
 	k := new(Kademlia)
 	k.NodeID = NewRandomID()
 	k.Self = Contact{k.NodeID, ip, port}
+	for i, _ := range k.Buckets {
+		b := &k.Buckets[i]
+		b.k = k
+		b.index = i
+		b.start()
+	}
 	k.updateContact(k.Self)
 	k.Table = make(map[ID][]byte)
 	return k
@@ -47,31 +53,7 @@ func newKademliaSplitAddress(ip net.IP, port uint16) *Kademlia {
 func (k *Kademlia) updateContact(c Contact) {
 	index := k.index(c.NodeID)
 	b := &k.Buckets[index]
-
-	e, ok := b.lookupContact(c.NodeID)
-	if !ok {
-		if b.contacts.Len() <= MAX_BUCKET_SIZE {
-			log.Print("Adding contact to bucket: ", c.NodeID.AsString())
-			b.contacts.PushBack(c)
-		} else {
-			// ping the least recently seen node
-			firstEl := b.contacts.Front()
-			first := firstEl.Value.(Contact)
-			_, err := SendPing(k, first.Address())
-			if err != nil {
-				log.Println("Old node responded, ignoring new contact")
-				// first is now most recently seen
-				b.contacts.MoveToBack(firstEl)
-			} else {
-				log.Println("Old node did not respond, evicting and adding new contact")
-				b.contacts.Remove(firstEl)
-				b.contacts.PushBack(c)
-			}
-		}
-	} else {
-		// Move contact to most recently seen in the bucket.
-		b.contacts.MoveToBack(e)
-	}
+	b.updateContact(c)
 }
 
 func (k *Kademlia) index(id ID) int {
