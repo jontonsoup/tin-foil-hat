@@ -1,6 +1,7 @@
 package kademlia
 
 import (
+	"container/list"
 	"errors"
 	"log"
 	"net/rpc"
@@ -75,4 +76,81 @@ func (k *Kademlia) FindValue(req FindValueRequest, res *FindValueResult) error {
 	}
 
 	return nil
+}
+
+// FIXME
+// copy over IterativeFindNode and then tweak it
+func IterativeFindValue(k *Kademlia, searchID ID) (FindValueResult, error) {
+	shortList := list.New()
+	alreadySeen := make(map[ID]bool)
+	initNodes := k.closestContacts(searchID, k.NodeID, ALPHA)
+
+	isCloser := func(c1 Contact, c2 Contact) int {
+		d1 := c1.NodeID.Xor(searchID)
+		d2 := c2.NodeID.Xor(searchID)
+		return d1.Compare(d2)
+	}
+
+	insertUnseenSorted(shortList, initNodes, isCloser, alreadySeen, MAX_BUCKET_SIZE)
+
+	for {
+
+		nextSearchNodes := getUnseen(shortList, alreadySeen, ALPHA)
+		if len(nextSearchNodes) == 0 {
+			break
+		}
+
+		newNodesChan := k.goFindValue(nextSearchNodes, searchID)
+
+		// send find_node rpcs to nextSearchNodes, add their nodes to shortList
+		for _, _ = range nextSearchNodes {
+			response := <-newNodesChan
+			if response.Err != nil {
+				removeFromSorted(shortList, response.searchNode.NodeID)
+			}
+			// mark them alreadySeen
+			alreadySeen[response.searchNode.NodeID] = true
+
+			// aggregate the new contacts into the shortList, keeping
+			// only the K closest
+			newNodes := make([]Contact, 0)
+
+			for _, node := range response.FoundNodes {
+				newNodes = append(newNodes, foundNodeToContact(&node))
+			}
+
+			insertUnseenSorted(shortList, newNodes, isCloser, alreadySeen, MAX_BUCKET_SIZE)
+		}
+
+	}
+	closestNodes := make([]FoundNode, 0)
+
+	for e := shortList.Front(); e != nil; e = e.Next() {
+		c := e.Value.(Contact)
+		f := contactToFoundNode(c)
+		closestNodes = append(closestNodes, f)
+	}
+
+	// FIXME : just creating a dummy FindValueResult here right now!
+	findValResult := new(FindValueResult)
+	findValResult.MsgID = NewRandomID()
+	findValResult.Nodes = closestNodes
+	return *findValResult, nil
+}
+
+// FIXME
+// copy over goFindNodes; handle case where a value is found (make a new type with channel and value?)
+func (k *Kademlia) goFindValue(searchNodes []Contact, searchID ID) <-chan SignedFoundNodes {
+	outChan := make(chan SignedFoundNodes)
+
+	for _, node := range searchNodes {
+
+		go func() {
+			foundNodes, err := SendFindNode(k, searchID, node.NodeID)
+			output := SignedFoundNodes{foundNodes, err, node}
+			outChan <- output
+		}()
+	}
+
+	return outChan
 }
