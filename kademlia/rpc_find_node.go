@@ -5,7 +5,10 @@ import (
 	"errors"
 	"log"
 	"net/rpc"
+	"time"
 )
+
+const TRPC_WAIT = 10 * time.Millisecond
 
 // FIND_NODE
 type FindNodeRequest struct {
@@ -36,7 +39,21 @@ func SendFindNode(k *Kademlia, searchNodeID ID, recipID ID) (nodes []FoundNode, 
 	return
 }
 
-func SendFindNodeAddr(k *Kademlia, nodeID ID, address string) ([]FoundNode, error) {
+func SendFindNodeAddr(k *Kademlia, nodeID ID, address string) (foundNodes []FoundNode, err error) {
+	recvd := make(chan bool, 1)
+	go func() {
+		foundNodes, err = sendFindNodeAddr(k, nodeID, address)
+		recvd <- true
+	}()
+	select {
+	case <-recvd:
+	case <-time.After(TRPC_WAIT):
+		return nil, errors.New("timeout")
+	}
+	return
+}
+
+func sendFindNodeAddr(k *Kademlia, nodeID ID, address string) ([]FoundNode, error) {
 	// TODO
 	// send a findNode rpc and return the k-closest nodes
 	log.Println("Sending FindNode rpc to ", address)

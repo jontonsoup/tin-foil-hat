@@ -12,8 +12,9 @@ import (
 
 const MAX_BUCKET_SIZE = 20
 
-//const TREFRESH = 3600 * time.Second
-const TREFRESH = 5 * time.Second
+const TREFRESH = 3600 * time.Second
+
+//const TREFRESH =  * time.Second
 
 // a simple list to implement a k-bucket
 type Bucket struct {
@@ -37,10 +38,11 @@ func (b *Bucket) waitRefresh() {
 		}
 	}
 	for {
+		timeOut := time.After(TREFRESH)
 		select {
 		case <-b.refreshChan:
 			// restart timer
-		case <-time.After(TREFRESH):
+		case <-timeOut:
 			// refresh bucket
 			if b.contacts.Len() != 0 {
 				log.Println("Bucket", b.index, "timed out, refreshing contacts")
@@ -55,6 +57,15 @@ func (b *Bucket) refresh() {
 	// iterativeFindNode using that number as key
 	log.Println("Refreshing bucket", b.index)
 
+	c := b.contacts.Front().Value.(Contact)
+	idInBucket := c.NodeID
+	// TODO: make this random
+	// idInBucket := NewRandomWithPrefix(b.k.NodeID, b.index)
+	if index := b.k.index(idInBucket); b.index != index {
+		// TODO: remove this once it's better tested
+		log.Fatal("Supposed to do bucket", b.index, "got bucket", index)
+	}
+	IterativeFindNode(b.k, idInBucket)
 }
 
 func (b *Bucket) updateContact(c Contact) {
