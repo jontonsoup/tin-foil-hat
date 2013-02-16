@@ -202,6 +202,10 @@ func bootupKademlia(listenStr string, firstPeerStr string) *Kademlia {
 func TestDoStore(t *testing.T) {
 
 	bootupKademlia("127.0.0.1:8765", "127.0.0.1:8765")
+	// val := []byte("foobar")
+	// stoReq := StoreRequest{k.Self, NewRandomID(), NewRandomID(), val}
+	// stoRes := new(StoreResult)
+	// SendStore(k, )
 	go bootupKademlia("127.0.0.1:8891", "127.0.0.1:8765")
 
 }
