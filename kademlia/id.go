@@ -86,6 +86,23 @@ func NewRandomID() (ret ID) {
 	return
 }
 
+// TODO: fix this, it's broken
+// Generate a new ID that matches the given ID in the first N bits
+func NewRandomWithPrefix(source ID, prefixLen int) (ret ID) {
+	ret = NewRandomID()
+
+outer: // 
+	for i := 0; i < IDBytes; i++ {
+		for j := 0; j < 8; j++ {
+			if i*8+j > prefixLen {
+				break outer
+			}
+			ret[i] ^= 0x1 << uint8(j)
+		}
+	}
+	return ret
+}
+
 // Generate a new ID of ones.
 func OnesID() (ret ID) {
 	for i := 0; i < IDBytes; i++ {
