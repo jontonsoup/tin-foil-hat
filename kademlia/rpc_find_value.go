@@ -78,8 +78,6 @@ func (k *Kademlia) FindValue(req FindValueRequest, res *FindValueResult) error {
 	return nil
 }
 
-// FIXME
-// copy over IterativeFindNode and then tweak it
 func IterativeFindValue(k *Kademlia, searchID ID) (FindValueResult, error) {
 	shortList := list.New()
 	alreadySeen := make(map[ID]bool)
@@ -105,6 +103,12 @@ func IterativeFindValue(k *Kademlia, searchID ID) (FindValueResult, error) {
 		// send find_node rpcs to nextSearchNodes, add their nodes to shortList
 		for _, _ = range nextSearchNodes {
 			response := <-newNodesChan
+
+			// if it's a value, just return it because we're done
+			if response.FoundValueResult.Value != nil {
+				return response.FoundValueResult, nil
+			}
+
 			if response.Err != nil {
 				removeFromSorted(shortList, response.searchNode.NodeID)
 			}
@@ -115,7 +119,7 @@ func IterativeFindValue(k *Kademlia, searchID ID) (FindValueResult, error) {
 			// only the K closest
 			newNodes := make([]Contact, 0)
 
-			for _, node := range response.FoundNodes {
+			for _, node := range response.FoundValueResult.Nodes {
 				newNodes = append(newNodes, foundNodeToContact(&node))
 			}
 
@@ -133,21 +137,26 @@ func IterativeFindValue(k *Kademlia, searchID ID) (FindValueResult, error) {
 
 	// FIXME : just creating a dummy FindValueResult here right now!
 	findValResult := new(FindValueResult)
-	findValResult.MsgID = NewRandomID()
+	// nobody cares about this, so make it 0
+	findValResult.MsgID = *new(ID)
 	findValResult.Nodes = closestNodes
 	return *findValResult, nil
 }
 
-// FIXME
-// copy over goFindNodes; handle case where a value is found (make a new type with channel and value?)
-func (k *Kademlia) goFindValue(searchNodes []Contact, searchID ID) <-chan SignedFoundNodes {
-	outChan := make(chan SignedFoundNodes)
+type SignedFindValueResults struct {
+	FoundValueResult FindValueResult
+	Err              error
+	searchNode       Contact
+}
+
+func (k *Kademlia) goFindValue(searchNodes []Contact, searchID ID) <-chan SignedFindValueResults {
+	outChan := make(chan SignedFindValueResults)
 
 	for _, node := range searchNodes {
 
 		go func() {
-			foundNodes, err := SendFindNode(k, searchID, node.NodeID)
-			output := SignedFoundNodes{foundNodes, err, node}
+			findValResult, err := SendFindValue(k, searchID, node.NodeID)
+			output := SignedFindValueResults{*findValResult, err, node}
 			outChan <- output
 		}()
 	}
