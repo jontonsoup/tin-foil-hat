@@ -135,7 +135,6 @@ func IterativeFindValue(k *Kademlia, searchID ID) (FindValueResult, error) {
 		closestNodes = append(closestNodes, f)
 	}
 
-	// FIXME : just creating a dummy FindValueResult here right now!
 	findValResult := new(FindValueResult)
 	// nobody cares about this, so make it 0
 	findValResult.MsgID = *new(ID)
