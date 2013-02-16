@@ -1,6 +1,7 @@
 package kademlia
 
 import (
+	"container/list"
 	"errors"
 	"log"
 	"net/rpc"
@@ -75,4 +76,89 @@ func (k *Kademlia) FindValue(req FindValueRequest, res *FindValueResult) error {
 	}
 
 	return nil
+}
+
+func IterativeFindValue(k *Kademlia, searchID ID) (FindValueResult, error) {
+	shortList := list.New()
+	alreadySeen := make(map[ID]bool)
+	initNodes := k.closestContacts(searchID, k.NodeID, ALPHA)
+
+	isCloser := func(c1 Contact, c2 Contact) int {
+		d1 := c1.NodeID.Xor(searchID)
+		d2 := c2.NodeID.Xor(searchID)
+		return d1.Compare(d2)
+	}
+
+	insertUnseenSorted(shortList, initNodes, isCloser, alreadySeen, MAX_BUCKET_SIZE)
+
+	for {
+
+		nextSearchNodes := getUnseen(shortList, alreadySeen, ALPHA)
+		if len(nextSearchNodes) == 0 {
+			break
+		}
+
+		newNodesChan := k.goFindValue(nextSearchNodes, searchID)
+
+		// send find_node rpcs to nextSearchNodes, add their nodes to shortList
+		for _, _ = range nextSearchNodes {
+			response := <-newNodesChan
+
+			// if it's a value, just return it because we're done
+			if response.FoundValueResult.Value != nil {
+				return response.FoundValueResult, nil
+			}
+
+			if response.Err != nil {
+				removeFromSorted(shortList, response.searchNode.NodeID)
+			}
+			// mark them alreadySeen
+			alreadySeen[response.searchNode.NodeID] = true
+
+			// aggregate the new contacts into the shortList, keeping
+			// only the K closest
+			newNodes := make([]Contact, 0)
+
+			for _, node := range response.FoundValueResult.Nodes {
+				newNodes = append(newNodes, foundNodeToContact(&node))
+			}
+
+			insertUnseenSorted(shortList, newNodes, isCloser, alreadySeen, MAX_BUCKET_SIZE)
+		}
+
+	}
+	closestNodes := make([]FoundNode, 0)
+
+	for e := shortList.Front(); e != nil; e = e.Next() {
+		c := e.Value.(Contact)
+		f := contactToFoundNode(c)
+		closestNodes = append(closestNodes, f)
+	}
+
+	findValResult := new(FindValueResult)
+	// nobody cares about this, so make it 0
+	findValResult.MsgID = *new(ID)
+	findValResult.Nodes = closestNodes
+	return *findValResult, nil
+}
+
+type SignedFindValueResults struct {
+	FoundValueResult FindValueResult
+	Err              error
+	searchNode       Contact
+}
+
+func (k *Kademlia) goFindValue(searchNodes []Contact, searchID ID) <-chan SignedFindValueResults {
+	outChan := make(chan SignedFindValueResults)
+
+	for _, node := range searchNodes {
+
+		go func() {
+			findValResult, err := SendFindValue(k, searchID, node.NodeID)
+			output := SignedFindValueResults{*findValResult, err, node}
+			outChan <- output
+		}()
+	}
+
+	return outChan
 }

@@ -3,12 +3,10 @@ package kademlia
 import (
 	"fmt"
 	"log"
-	"math/rand"
 	"net"
 	"net/http"
 	"net/rpc"
 	"testing"
-	"time"
 )
 
 // func ExampleBucket() {

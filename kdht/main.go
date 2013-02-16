@@ -212,7 +212,41 @@ func runCommand(k *kademlia.Kademlia, s string) {
 		}
 	case "iterativeFindValue":
 		// TODO
-		fmt.Println("NOT IMPLEMENTED")
+		// fmt.Println("NOT IMPLEMENTED")
+		if len(fields) != 2 {
+			fmt.Println("usage: iterativeFindValue key")
+		}
+
+		searchID, err := kademlia.FromString(fields[1])
+		if err != nil {
+			fmt.Println("Invalid NodeID: ", fields[1])
+			return
+		}
+
+		findValResult, err := kademlia.IterativeFindValue(k, searchID)
+
+		if err != nil {
+			fmt.Println("Iterative find value error:", err)
+			return
+		}
+
+		// if value exists, print it and return
+		if findValResult.Value != nil {
+			fmt.Printf("%v %v\n", searchID.AsString(), string(findValResult.Value))
+			return
+		}
+
+		contacts := findValResult.Nodes
+		// otherwise print all the found nodes
+		ids := make([]kademlia.ID, len(contacts))
+
+		for i, c := range contacts {
+			ids[i] = c.NodeID
+		}
+
+		// TODO: make sure this is right, it looks really dumb
+		fmt.Printf("%v\n", ids)
+
 	case "store":
 		if len(fields) != 4 {
 			fmt.Println("usage: store nodeID key value")
