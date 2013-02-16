@@ -183,13 +183,12 @@ func runCommand(k *kademlia.Kademlia, s string) {
 			return
 		}
 
-		ids := make([]kademlia.ID, len(contacts))
+		ids := make([]string, len(contacts))
 
 		for i, c := range contacts {
-			ids[i] = c.NodeID
+			ids[i] = c.NodeID.AsString()
 		}
 
-		// TODO: make sure this is right, it looks really dumb
 		fmt.Printf("%v\n", ids)
 	case "iterativeStore":
 		if len(fields) != 3 {
@@ -238,13 +237,12 @@ func runCommand(k *kademlia.Kademlia, s string) {
 
 		contacts := findValResult.Nodes
 		// otherwise print all the found nodes
-		ids := make([]kademlia.ID, len(contacts))
+		ids := make([]string, len(contacts))
 
 		for i, c := range contacts {
-			ids[i] = c.NodeID
+			ids[i] = c.NodeID.AsString()
 		}
 
-		// TODO: make sure this is right, it looks really dumb
 		fmt.Printf("%v\n", ids)
 
 	case "store":
@@ -292,13 +290,12 @@ func runCommand(k *kademlia.Kademlia, s string) {
 			fmt.Println("ERR:", err)
 			return
 		}
-		ids := make([]kademlia.ID, len(nodes))
+		ids := make([]string, len(nodes))
 
 		for i, node := range nodes {
-			ids[i] = node.NodeID
+			ids[i] = node.NodeID.AsString()
 		}
 
-		// TODO: make sure this is right, it looks really dumb
 		fmt.Printf("%v\n", ids)
 
 	case "find_value":
@@ -330,13 +327,12 @@ func runCommand(k *kademlia.Kademlia, s string) {
 
 		contacts := findValResult.Nodes
 		// otherwise print all the found nodes
-		ids := make([]kademlia.ID, len(contacts))
+		ids := make([]string, len(contacts))
 
 		for i, c := range contacts {
-			ids[i] = c.NodeID
+			ids[i] = c.NodeID.AsString()
 		}
 
-		// TODO: make sure this is right, it looks really dumb
 		fmt.Printf("%v\n", ids)
 
 	default:
