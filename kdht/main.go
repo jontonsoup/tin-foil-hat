@@ -57,12 +57,13 @@ func main() {
 
 	fmt.Printf("pong msgID: %s\n", pong.MsgID.AsString())
 
-	_, err = kademlia.SendFindNodeAddr(kadem, kadem.NodeID, firstPeerStr)
+	// THis was the workaround, Ted.
+	//	_, err = kademlia.SendFindNodeAddr(kadem, kadem.NodeID, firstPeerStr)
 
-	var foundNodes []kademlia.Contact
-	if err == nil {
-		foundNodes, err = kademlia.IterativeFindNode(kadem, kadem.NodeID)
-	}
+	//	var foundNodes []kademlia.Contact
+	//	if err == nil {
+	foundNodes, err := kademlia.IterativeFindNode(kadem, kadem.NodeID)
+	//	}
 
 	if err != nil {
 		log.Fatal("Bootstrap find_node error: ", err)
@@ -195,10 +196,10 @@ func runCommand(k *kademlia.Kademlia, s string) (outStr string, err error) {
 			return
 		}
 
-		ids := make([]kademlia.ID, len(contacts))
+		ids := make([]string, len(contacts))
 
 		for i, c := range contacts {
-			ids[i] = c.NodeID
+			ids[i] = c.NodeID.AsString()
 		}
 
 		// TODO: make sure this is right, it looks really dumb
@@ -252,10 +253,10 @@ func runCommand(k *kademlia.Kademlia, s string) (outStr string, err error) {
 
 		contacts := findValResult.Nodes
 		// otherwise print all the found nodes
-		ids := make([]kademlia.ID, len(contacts))
+		ids := make([]string, len(contacts))
 
 		for i, c := range contacts {
-			ids[i] = c.NodeID
+			ids[i] = c.NodeID.AsString()
 		}
 
 		// TODO: make sure this is right, it looks really dumb
@@ -307,10 +308,10 @@ func runCommand(k *kademlia.Kademlia, s string) (outStr string, err error) {
 		if errCheck != nil {
 			return
 		}
-		ids := make([]kademlia.ID, len(nodes))
+		ids := make([]string, len(nodes))
 
 		for i, node := range nodes {
-			ids[i] = node.NodeID
+			ids[i] = node.NodeID.AsString()
 		}
 
 		// TODO: make sure this is right, it looks really dumb
@@ -345,10 +346,10 @@ func runCommand(k *kademlia.Kademlia, s string) (outStr string, err error) {
 
 		contacts := findValResult.Nodes
 		// otherwise print all the found nodes
-		ids := make([]kademlia.ID, len(contacts))
+		ids := make([]string, len(contacts))
 
 		for i, c := range contacts {
-			ids[i] = c.NodeID
+			ids[i] = c.NodeID.AsString()
 		}
 
 		// TODO: make sure this is right, it looks really dumb
