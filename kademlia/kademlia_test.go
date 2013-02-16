@@ -3,12 +3,12 @@ package kademlia
 import (
 	"fmt"
 	"log"
+	"math/rand"
 	"net"
 	"net/http"
 	"net/rpc"
 	"testing"
 	"time"
-	"math/rand"
 )
 
 // func ExampleBucket() {
@@ -201,7 +201,7 @@ func bootupKademlia(listenStr string, firstPeerStr string) *Kademlia {
 
 func TestDoStore(t *testing.T) {
 
-	bootupKademlia("127.0.0.1:8890", "127.0.0.1:8090")
+	bootupKademlia("127.0.0.1:8765", "127.0.0.1:8765")
 	//bootupKademlia("127.0.0.1:8891", "127.0.0.1:8890")
 
 }
