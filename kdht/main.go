@@ -56,12 +56,13 @@ func main() {
 
 	fmt.Printf("pong msgID: %s\n", pong.MsgID.AsString())
 
-	_, err = kademlia.SendFindNodeAddr(kadem, kadem.NodeID, firstPeerStr)
+	// THis was the workaround, Ted.
+	//	_, err = kademlia.SendFindNodeAddr(kadem, kadem.NodeID, firstPeerStr)
 
-	var foundNodes []kademlia.Contact
-	if err == nil {
-		foundNodes, err = kademlia.IterativeFindNode(kadem, kadem.NodeID)
-	}
+	//	var foundNodes []kademlia.Contact
+	//	if err == nil {
+	foundNodes, err := kademlia.IterativeFindNode(kadem, kadem.NodeID)
+	//	}
 
 	if err != nil {
 		log.Fatal("Bootstrap find_node error: ", err)

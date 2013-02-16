@@ -13,7 +13,8 @@ type Ping struct {
 }
 
 type Pong struct {
-	MsgID ID
+	MsgID  ID
+	Sender Contact
 }
 
 func SendPing(k *Kademlia, address string) (pong *Pong, err error) {
@@ -35,6 +36,8 @@ func SendPing(k *Kademlia, address string) (pong *Pong, err error) {
 		err = errors.New("Pong MsgID didn't match Ping MsgID")
 	}
 
+	k.updateContact(pong.Sender)
+
 	return
 }
 
@@ -45,5 +48,6 @@ func (k *Kademlia) Ping(ping Ping, pong *Pong) error {
 		k.updateContact(ping.Sender)
 	}
 	pong.MsgID = ping.MsgID
+	pong.Sender = k.Self
 	return nil
 }
