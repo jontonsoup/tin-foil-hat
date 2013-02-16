@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-const TRPC_WAIT = 10 * time.Millisecond
+const TRPC_WAIT = 30 * time.Second
 
 // FIND_NODE
 type FindNodeRequest struct {
