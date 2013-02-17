@@ -39,6 +39,7 @@ func SendFindNode(k *Kademlia, searchNodeID ID, recipID ID) (nodes []FoundNode, 
 	return
 }
 
+// this was capitalized for the workaround
 func SendFindNodeAddr(k *Kademlia, nodeID ID, address string) (foundNodes []FoundNode, err error) {
 	recvd := make(chan bool, 1)
 	go func() {
@@ -48,7 +49,11 @@ func SendFindNodeAddr(k *Kademlia, nodeID ID, address string) (foundNodes []Foun
 	select {
 	case <-recvd:
 	case <-time.After(TRPC_WAIT):
-		return nil, errors.New("timeout")
+		foundNodes, err = nil, errors.New("timeout")
+	}
+
+	if err != nil {
+		k.removeContact(nodeID)
 	}
 	return
 }
@@ -114,11 +119,12 @@ func IterativeFindNode(k *Kademlia, searchID ID) ([]Contact, error) {
 	insertUnseenSorted(shortList, initNodes, isCloser, alreadySeen, MAX_BUCKET_SIZE)
 
 	for {
-
 		nextSearchNodes := getUnseen(shortList, alreadySeen, ALPHA)
 		if len(nextSearchNodes) == 0 {
 			break
 		}
+
+		closestNode := shortList.Front().Value.(Contact)
 
 		newNodesChan := k.goFindNodes(nextSearchNodes, searchID)
 
@@ -141,7 +147,32 @@ func IterativeFindNode(k *Kademlia, searchID ID) ([]Contact, error) {
 
 			insertUnseenSorted(shortList, newNodes, isCloser, alreadySeen, MAX_BUCKET_SIZE)
 		}
+		newClosest := shortList.Front().Value.(Contact)
 
+		if newClosest.NodeID.Equals(closestNode.NodeID) {
+			// Didn't find anything closer than the old
+			// closest so contact everyone that's left and
+			// make sure they're there
+			allUnseen := getUnseen(shortList, alreadySeen, shortList.Len())
+
+			if len(allUnseen) != 0 {
+				log.Println("Didn't get closer, removing already seens")
+			}
+			for _, c := range allUnseen {
+				log.Println(c.NodeID.AsString())
+			}
+
+			unseenNodes := k.goFindNodes(allUnseen, searchID)
+
+			// send find_node rpcs to nextSearchNodes, add their nodes to shortList
+			for _, _ = range allUnseen {
+				response := <-unseenNodes
+				if response.Err != nil {
+					removeFromSorted(shortList, response.searchNode.NodeID)
+				}
+			}
+			break
+		}
 	}
 	closestNodes := make([]Contact, 0)
 
@@ -162,8 +193,9 @@ type SignedFoundNodes struct {
 func (k *Kademlia) goFindNodes(searchNodes []Contact, searchID ID) <-chan SignedFoundNodes {
 	outChan := make(chan SignedFoundNodes)
 
-	for _, node := range searchNodes {
-
+	for _, curNode := range searchNodes {
+		node := curNode
+		log.Println("Going sendFindNode to", node.NodeID.AsString())
 		go func() {
 			foundNodes, err := SendFindNode(k, searchID, node.NodeID)
 			output := SignedFoundNodes{foundNodes, err, node}

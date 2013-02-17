@@ -68,6 +68,13 @@ func (b *Bucket) refresh() {
 	IterativeFindNode(b.k, idInBucket)
 }
 
+func (b *Bucket) removeContact(id ID) {
+	e, ok := b.lookupContact(id)
+	if ok {
+		b.contacts.Remove(e)
+	}
+}
+
 func (b *Bucket) updateContact(c Contact) {
 	e, ok := b.lookupContact(c.NodeID)
 

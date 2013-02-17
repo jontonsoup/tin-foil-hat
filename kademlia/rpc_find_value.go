@@ -27,6 +27,7 @@ func SendFindValue(k *Kademlia, key ID, nodeID ID) (ret *FindValueResult, err er
 	contact, _ := LookupContact(k, nodeID)
 	client, err := rpc.DialHTTP("tcp", contact.Address())
 	if err != nil {
+		k.removeContact(nodeID)
 		return
 	}
 	req := new(FindValueRequest)
@@ -35,6 +36,7 @@ func SendFindValue(k *Kademlia, key ID, nodeID ID) (ret *FindValueResult, err er
 	req.Key = key
 	err = client.Call("Kademlia.FindValue", req, &ret)
 	if err != nil {
+		k.removeContact(nodeID)
 		return
 	}
 	defer client.Close()
@@ -98,20 +100,23 @@ func IterativeFindValue(k *Kademlia, searchID ID) (FindValueResult, error) {
 			break
 		}
 
+		closestNode := shortList.Front().Value.(Contact)
+
 		newNodesChan := k.goFindValue(nextSearchNodes, searchID)
 
 		// send find_node rpcs to nextSearchNodes, add their nodes to shortList
 		for _, _ = range nextSearchNodes {
 			response := <-newNodesChan
 
+			if response.Err != nil {
+				removeFromSorted(shortList, response.searchNode.NodeID)
+			}
 			// if it's a value, just return it because we're done
+
 			if response.FoundValueResult.Value != nil {
 				return response.FoundValueResult, nil
 			}
 
-			if response.Err != nil {
-				removeFromSorted(shortList, response.searchNode.NodeID)
-			}
 			// mark them alreadySeen
 			alreadySeen[response.searchNode.NodeID] = true
 
@@ -124,6 +129,31 @@ func IterativeFindValue(k *Kademlia, searchID ID) (FindValueResult, error) {
 			}
 
 			insertUnseenSorted(shortList, newNodes, isCloser, alreadySeen, MAX_BUCKET_SIZE)
+		}
+
+		newClosest := shortList.Front().Value.(Contact)
+
+		if newClosest.NodeID.Equals(closestNode.NodeID) {
+			// Didn't find anything closer than the old closest so stop
+			allUnseen := getUnseen(shortList, alreadySeen, shortList.Len())
+
+			unseenNodes := k.goFindValue(allUnseen, searchID)
+
+			// send find_node rpcs to nextSearchNodes, add their nodes to shortList
+			for _, _ = range allUnseen {
+				response := <-unseenNodes
+
+				if response.Err != nil {
+					removeFromSorted(shortList, response.searchNode.NodeID)
+				}
+				// if it's a value, just return it because we're done
+
+				if response.FoundValueResult.Value != nil {
+					return response.FoundValueResult, nil
+				}
+			}
+
+			break
 		}
 
 	}
@@ -151,8 +181,8 @@ type SignedFindValueResults struct {
 func (k *Kademlia) goFindValue(searchNodes []Contact, searchID ID) <-chan SignedFindValueResults {
 	outChan := make(chan SignedFindValueResults)
 
-	for _, node := range searchNodes {
-
+	for _, curNode := range searchNodes {
+		node := curNode
 		go func() {
 			findValResult, err := SendFindValue(k, searchID, node.NodeID)
 			output := SignedFindValueResults{*findValResult, err, node}

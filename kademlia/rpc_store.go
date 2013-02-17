@@ -38,6 +38,7 @@ func SendStore(k *Kademlia, key ID, value []byte, nodeID ID) error {
 	client, err := rpc.DialHTTP("tcp", address)
 	log.Println("Sending Store rpc to", address)
 	if err != nil {
+		k.removeContact(c.NodeID)
 		return nil
 	}
 

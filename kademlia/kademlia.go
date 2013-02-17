@@ -48,6 +48,12 @@ func newKademliaSplitAddress(ip net.IP, port uint16) *Kademlia {
 	return k
 }
 
+func (k *Kademlia) removeContact(id ID) {
+	index := k.index(id)
+	b := &k.Buckets[index]
+	b.removeContact(id)
+}
+
 // Correctly updates the bucket given that the contact given has just
 // been observed
 func (k *Kademlia) updateContact(c Contact) {
