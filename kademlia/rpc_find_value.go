@@ -83,7 +83,6 @@ func (k *Kademlia) FindValue(req FindValueRequest, res *FindValueResult) error {
 func IterativeFindValue(k *Kademlia, searchID ID) (FindValueResult, error) {
 	shortList := list.New()
 	alreadySeen := make(map[ID]bool)
-	initNodes := k.closestContacts(searchID, k.NodeID, ALPHA)
 
 	isCloser := func(c1 Contact, c2 Contact) int {
 		d1 := c1.NodeID.Xor(searchID)
@@ -91,6 +90,7 @@ func IterativeFindValue(k *Kademlia, searchID ID) (FindValueResult, error) {
 		return d1.Compare(d2)
 	}
 
+	initNodes := k.closestContacts(searchID, k.NodeID, ALPHA)
 	insertUnseenSorted(shortList, initNodes, isCloser, alreadySeen, MAX_BUCKET_SIZE)
 
 	for {
@@ -99,7 +99,7 @@ func IterativeFindValue(k *Kademlia, searchID ID) (FindValueResult, error) {
 		if len(nextSearchNodes) == 0 {
 			break
 		}
-
+		// shortlist will be nonempty bc nextSearchNodes is nonempty
 		closestNode := shortList.Front().Value.(Contact)
 
 		newNodesChan := k.goFindValue(nextSearchNodes, searchID)
@@ -131,7 +131,16 @@ func IterativeFindValue(k *Kademlia, searchID ID) (FindValueResult, error) {
 			insertUnseenSorted(shortList, newNodes, isCloser, alreadySeen, MAX_BUCKET_SIZE)
 		}
 
-		newClosest := shortList.Front().Value.(Contact)
+		front := shortList.Front()
+
+		// shortList is empty, start over with stale nodes gone
+		if front == nil {
+			initNodes := k.closestContacts(searchID, k.NodeID, ALPHA)
+			insertUnseenSorted(shortList, initNodes, isCloser, alreadySeen, MAX_BUCKET_SIZE)
+			continue
+		}
+
+		newClosest := front.Value.(Contact)
 
 		if newClosest.NodeID.Equals(closestNode.NodeID) {
 			// Didn't find anything closer than the old closest so stop
