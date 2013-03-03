@@ -16,15 +16,16 @@ func RunCommand(k *Kademlia, s string) (outStr string, err error) {
 
 	switch fields[0] {
 
-	case "encrpyt":
-		if len(fields) != 1 {
+	case "encrypt":
+		if len(fields) != 2 {
 			err = errors.New("usage: Path to file")
 			return
 		}
+		outStr, err = Encrypt(fields[1])
 		return
 
 	case "decrypt":
-		if len(fields) != 1 {
+		if len(fields) != 2 {
 			err = errors.New("usage: key")
 			return
 		}
