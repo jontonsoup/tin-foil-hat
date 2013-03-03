@@ -14,7 +14,7 @@ import (
 )
 
 import (
-	"kademlia-go/kademlia"
+	"kademlia-secure/kademlia"
 )
 
 func main() {
