@@ -37,3 +37,21 @@ func Encrypt(filePath string) (outStr string, err error) {
 
   //return completed key to user
 }
+
+func Decrypt(key string) (outStr string, err error){
+  //deconstruct key into parts
+
+  //randomly call find on parts
+
+  //check to see if each part matches its SHA key (for file integrity)
+
+  //order parts
+
+  //decrypt whole ordered file
+
+  //remove padding from file
+
+  //return file bytes to user
+
+}
+
