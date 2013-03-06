@@ -11,7 +11,7 @@ import (
 	"kademlia-secure/kademlia"
 )
 
-func RunCommand(k *kademlia.Kademlia, s string) (outStr string, err error) {
+func (tfh *TFH) runCommand(s string) (outStr string, err error) {
 	fields := strings.Fields(s)
 	if len(fields) == 0 {
 		err = errors.New("You need some fields for runCommand")
@@ -36,7 +36,7 @@ func RunCommand(k *kademlia.Kademlia, s string) (outStr string, err error) {
 		return
 
 	case "whoami":
-		outStr = fmt.Sprintf("%v", k.NodeID.AsString())
+		outStr = fmt.Sprintf("%v", tfh.kadem.NodeID.AsString())
 		return
 
 	case "ping":
@@ -55,7 +55,7 @@ func RunCommand(k *kademlia.Kademlia, s string) (outStr string, err error) {
 				err = errors.New("usage: ping [ip:port | NodeID]")
 				return
 			}
-			if c, ok := kademlia.LookupContact(k, id); !ok {
+			if c, ok := kademlia.LookupContact(tfh.kadem, id); !ok {
 				err = errors.New("Node not found")
 				return
 			} else {
@@ -64,7 +64,7 @@ func RunCommand(k *kademlia.Kademlia, s string) (outStr string, err error) {
 			}
 
 		}
-		pong, errCheck := kademlia.SendPing(k, address)
+		pong, errCheck := kademlia.SendPing(tfh.kadem, address)
 		if errCheck != nil {
 			err = errors.New(fmt.Sprintf("Ping error: %v", err))
 			return

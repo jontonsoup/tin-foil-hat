@@ -33,7 +33,7 @@ func main() {
 
 	fmt.Printf("kademlia starting up!\n")
 	kadem := kademlia.NewKademlia(listenStr)
-
+	tfh := NewTFH(kadem)
 	rpc.Register(kadem)
 	rpc.HandleHTTP()
 	l, err := net.Listen("tcp", listenStr)
@@ -77,7 +77,7 @@ func main() {
 		if err != nil {
 			fmt.Println(err)
 		}
-		str, err := RunCommand(kadem, line)
+		str, err := tfh.runCommand(line)
 		if err == nil {
 			fmt.Println(str)
 		} else {
