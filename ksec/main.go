@@ -77,7 +77,7 @@ func main() {
 		if err != nil {
 			fmt.Println(err)
 		}
-		str, err := kademlia.RunCommand(kadem, line)
+		str, err := RunCommand(kadem, line)
 		if err == nil {
 			fmt.Println(str)
 		} else {
