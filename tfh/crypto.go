@@ -75,7 +75,7 @@ func parseFile(filePath string) (fileContents []byte) {
 	// open the file
 	file, err := os.Open(filePath) // For read access.
 	if err != nil {
-		err = errors.New("FATAL")
+		err = errors.New("FATAL: Error opening file")
 		return
 	}
 	defer file.Close()
@@ -83,13 +83,13 @@ func parseFile(filePath string) (fileContents []byte) {
 	// read file into a string
 	fstat, err := file.Stat()
 	if err != nil {
-		err = errors.New("FATAL")
+		err = errors.New("FATAL: fstat fail")
 		return
 	}
 	fileContents = make([]byte, fstat.Size())
 	_, err = file.Read(fileContents)
 	if err != nil {
-		err = errors.New("READ ERROR")
+		err = errors.New("FATAL: READ ERROR")
 		return
 	}
 
