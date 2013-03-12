@@ -2,10 +2,10 @@ package main
 
 import (
 	// "crypto/aes"
-	"crypto/sha256"
-	"errors"
-	"fmt"
-	"os"
+"crypto/sha256"
+"errors"
+"fmt"
+"os"
 )
 
 func (tfh *TFH) encryptFile() {
@@ -20,14 +20,8 @@ func (tfh *TFH) encryptFile() {
 // takes a file path and ecrypts that file, returning
 // a hash representing a way to
 func Encrypt(filePath string) (outStr string, err error) {
-	fileContents := parseFile(filePath)
 
-	//compute the SHA on the untouched file for sanity check
-	h := sha256.New()
-	h.Write(fileContents)
-	shaSum := h.Sum(nil)
-	outStr = fmt.Sprintf("% x", shaSum)
-	return
+	outStr, _ = hashFile(filePath)
 
 	//determine how much we need to pad unencrypted file to make it mod 256 bit (append to output key (for user))
 
@@ -41,6 +35,19 @@ func Encrypt(filePath string) (outStr string, err error) {
 	//do until all chunks are stored
 
 	//return completed key to user
+	return
+}
+
+
+func hashFile(filePath string) (outStr string, err error) {
+	fileContents := parseFile(filePath)
+
+	//compute the SHA on the untouched file for sanity check
+	h := sha256.New()
+	h.Write(fileContents)
+	shaSum := h.Sum(nil)
+	outStr = fmt.Sprintf("% x", shaSum)
+	return
 }
 
 func parseFile(filePath string) (fileContents []byte) {
