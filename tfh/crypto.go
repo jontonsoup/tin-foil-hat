@@ -58,13 +58,14 @@ func Decrypt(key string) (outStr string, err error) {
 }
 
 func aesEncryptFile(msg []byte, inputkey string) {
+	numPadBytes := numBytesToPad(msg)
+	msg = padFile(msg, numPadBytes)
 	// some key, 32 Byte long
 	key := []byte(inputkey)
 	str := string(key)
 	fmt.Println("key: ", str)
-	// fmt.Println("message: ", msg)
 
-	// // create the new cipher
+	// create the new cipher
 	c, err := aes.NewCipher(key)
 	if err != nil {
 		fmt.Println("Error: NewCipher(%d bytes) = %s", len(key), err)
@@ -72,25 +73,33 @@ func aesEncryptFile(msg []byte, inputkey string) {
 	}
 
 	encrypted_file := make([]byte, len(msg))
-	out := make([]byte, 16)
+	encrypt_block := make([]byte, c.BlockSize())
 
-	for i := 0; i < len(msg)-16; i = i + 16 {
-		c.Encrypt(out, msg[i:i+15])
-		encrypted_file = append(encrypted_file, out...)
+	for i := 0; (i + c.BlockSize()) != len(msg); i = i + c.BlockSize() {
+		c.Encrypt(encrypt_block, msg[i:i+c.BlockSize()])
+		fmt.Println("cryp: ", encrypt_block)
+		//the append isnt working correctly
+		encrypted_file = append(encrypted_file, encrypt_block...)
 	}
-
+	fmt.Println("cryp: ", encrypted_file[16:32])
+	// fmt.Println("block: ", encrypted_file)
 	fmt.Println("len of encrypted: ", len(encrypted_file))
-	fmt.Println(">> ", encrypted_file)
+	// fmt.Println(">> ", encrypted_file)
 
-	// now we decrypt our encrypted text
-	plain := make([]byte, len(out))
-	decrypt_block := make([]byte, 16)
-	for i := 0; i < len(encrypted_file)-16; i = i + 16 {
-		c.Decrypt(decrypt_block, encrypted_file[i:i+15])
-		plain = append(plain, decrypt_block...)
-	}
+	// // now we decrypt our encrypted text
+	// plain := make([]byte, len(msg))
+	// decrypt_block := make([]byte, c.BlockSize())
+	// for i := 0; (i + c.BlockSize()) != len(msg); i = i + c.BlockSize() {
+	// 	c.Decrypt(decrypt_block, encrypted_file[i:i+c.BlockSize()])
+	// 	plain = append(plain, decrypt_block...)
+	// }
 
-	// fmt.Println("msg: ", plain)
+	// fmt.Println("msg: ", msg[:16])
+	// fmt.Println("cryp: ", encrypted_file[:16])
+	// fmt.Println("plain: ", plain[:16])
+ //  fmt.Println("message: ", len(msg))
+	// fmt.Println("msg: ", len(plain))
+
 }
 
 func padFile(fileContents []byte, numBytesPadding int) (paddedFile []byte) {
