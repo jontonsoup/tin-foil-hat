@@ -57,14 +57,6 @@ func Decrypt(key string) (outStr string, err error) {
 	return
 }
 
-// deconstructs the user's key string to find out things like padding, sha key, etc
-func destructureKeyString(key string) (padding []byte, unencHash []byte, chunks []byte) {
-	b := []byte(key)
-	padding = b[:2]
-	unencHash = b[2:34]
-	chunks = b[34:]
-	return
-}
 
 func aesEncryptFile(msg []byte, inputkey string) {
 	// some key, 32 Byte long
@@ -83,7 +75,7 @@ func aesEncryptFile(msg []byte, inputkey string) {
 	encrypted_file := make([]byte, len(msg))
 	out := make([]byte, 16)
 
-	for i := 0; i < len(msg) - 16 ; i = i + 16 {
+	for i := 0; i < len(msg)-16; i = i + 16 {
 		c.Encrypt(out, msg[i:i+15])
 		encrypted_file = append(encrypted_file, out...)
 	}
@@ -94,18 +86,26 @@ func aesEncryptFile(msg []byte, inputkey string) {
 	// now we decrypt our encrypted text
 	plain := make([]byte, len(out))
 	decrypt_block := make([]byte, 16)
-	for i := 0; i < len(encrypted_file) - 16; i = i + 16 {
+	for i := 0; i < len(encrypted_file)-16; i = i + 16 {
 		c.Decrypt(decrypt_block, encrypted_file[i:i+15])
 		plain = append(plain, decrypt_block...)
 	}
 
-
 	// fmt.Println("msg: ", plain)
 }
 
+// deconstructs the user's key string to find out things like padding, sha key, etc
+func destructureKeyString(key string) (padding []byte, unencHash []byte, chunks []byte) {
+	b := []byte(key)
+	padding = b[:2]
+	unencHash = b[2:34]
+	chunks = b[34:]
+	return
+}
+
 // Returns number of bytes to pad to make given file mod 32 byte
-func numBytesToPad(fileContents []byte) (numBytes int) {
-	numBytes = 32 - (len(fileContents) % 32)
+func numBytesToPad(fileContents []byte) (numBytes uint16) {
+	numBytes = uint16(32 - (len(fileContents) % 32))
 	return
 }
 
