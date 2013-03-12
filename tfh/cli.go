@@ -31,7 +31,7 @@ func (tfh *TFH) runCommand(s string) (outStr string, err error) {
 			err = errors.New("ERROR: you must have a 32 character key")
 			return
 		}
-		outStr, err = Encrypt(fields[1], fields[2])
+		outStr, err = tfh.encryptAndStore(fields[1], fields[2])
 		return
 
 	case "decrypt":

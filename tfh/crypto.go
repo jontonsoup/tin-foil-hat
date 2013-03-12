@@ -8,8 +8,19 @@ import (
 	"os"
 )
 
-func (tfh *TFH) encryptFile() {
+const CHUNK_SIZE = 256
 
+func (tfh *TFH) encryptAndStore(filePath, key string) (outStr string, err error) {
+	fileContents := parseFile(filePath)
+	outStr, err = hashFile(fileContents)
+	if err != nil {
+		fmt.Println("Hash Failed somehow")
+	}
+	//	encryptedBytes := encrypt(fileContents, key)
+
+	//	parts := splitBytes(encryptedBytes)
+
+	return
 }
 
 //
@@ -19,6 +30,7 @@ func (tfh *TFH) encryptFile() {
 
 // takes a file path and ecrypts that file, returning
 // a hash representing a way to
+/*
 func Encrypt(filePath string, key string) (outStr string, err error) {
 
 	fileContents := parseFile(filePath)
@@ -40,7 +52,7 @@ func Encrypt(filePath string, key string) (outStr string, err error) {
 
 	//return completed key to user
 	return
-}
+}*/
 
 func Decrypt(key string) (outStr string, err error) {
 	//deconstruct key into parts
@@ -59,7 +71,7 @@ func Decrypt(key string) (outStr string, err error) {
 	return
 }
 
-func aesEncryptFile(msg []byte, inputkey string) (encrypted_file []byte) {
+func encrypt(msg []byte, inputkey string) (encrypted_file []byte) {
 	numPadBytes := numBytesToPad(msg)
 	msg = padFile(msg, numPadBytes)
 	// some key, 32 Byte long
@@ -83,7 +95,7 @@ func aesEncryptFile(msg []byte, inputkey string) (encrypted_file []byte) {
 
 }
 
-func aesDecryptFile(encrypted_file []byte, inputkey string) (string) {
+func decrypt(encrypted_file []byte, inputkey string) []byte {
 	key := []byte(inputkey)
 	c, err := aes.NewCipher(key)
 	if err != nil {
@@ -92,14 +104,14 @@ func aesDecryptFile(encrypted_file []byte, inputkey string) (string) {
 	}
 
 	// now we decrypt our encrypted text
-	plain_text := make([]byte, 0)
+	decrypted_bytes := make([]byte, 0)
 	decrypt_block := make([]byte, c.BlockSize())
 	for i := 0; i != len(encrypted_file); i = i + c.BlockSize() {
 		c.Decrypt(decrypt_block, encrypted_file[i:i+c.BlockSize()])
-		plain_text = append(plain_text, decrypt_block...)
+		decrypted_bytes = append(decrypted_bytes, decrypt_block...)
 	}
 
-	return string(plain_text)
+	return decrypted_bytes
 }
 
 func padFile(fileContents []byte, numBytesPadding int) (paddedFile []byte) {
