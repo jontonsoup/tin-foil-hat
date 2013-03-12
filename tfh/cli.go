@@ -1,8 +1,10 @@
 package main
 
 import (
+	"encoding/hex"
 	"errors"
 	"fmt"
+	"log"
 	"strconv"
 	"strings"
 )
@@ -42,6 +44,28 @@ func (tfh *TFH) runCommand(s string) (outStr string, err error) {
 	case "whoami":
 		outStr = fmt.Sprintf("%v", tfh.kadem.NodeID.AsString())
 		return
+	case "local_find_value":
+		if len(fields) != 2 {
+			err = errors.New("usage: local_find_value key")
+			return
+		}
+
+		key, errCheck := kademlia.FromString(fields[1])
+
+		if errCheck != nil {
+			err = errors.New(fmt.Sprintf("Invalid key: %v", fields[1]))
+			return
+		}
+
+		value, ok := kademlia.LocalLookup(tfh.kadem, key)
+
+		if ok {
+			outStr = fmt.Sprintf("%v", string(value))
+			return
+		} else {
+			err = errors.New("LocalLookup error")
+			return
+		}
 
 	case "ping":
 		var address string
@@ -76,8 +100,24 @@ func (tfh *TFH) runCommand(s string) (outStr string, err error) {
 			outStr = fmt.Sprintf("pong msgID: %v", pong.MsgID.AsString())
 		}
 
+	case "hashStore":
+		if len(fields) != 2 {
+			err = errors.New("usage: hashStore val")
+			return
+		}
+
+		value := []byte(fields[1])
+
+		var key []byte
+		key, err = kademlia.HashStore(tfh.kadem, value)
+		if err != nil {
+			return
+		}
+
+		log.Println("Stored value", string(value), "with key", hex.EncodeToString(key))
 	default:
 		err = errors.New(fmt.Sprintf("Unrecognized command: %v", fields[0]))
 	}
 	return
+
 }
