@@ -10,7 +10,7 @@ import (
 
 // IDs are 160-bit ints. We're going to use byte arrays with a number of
 // methods.
-const IDBytes = 20
+const IDBytes = 32
 
 type ID [IDBytes]byte
 
