@@ -42,11 +42,7 @@ func Encrypt(filePath string, key string) (outStr string, err error) {
 
 // Returns number of bytes to pad to make given file mod 32 byte
 func numBytesToPad(fileContents []byte) (numBytes int) {
-	x := len(fileContents) % 32
-	if x <= 16 {
-		x = 32 - x
-	}
-	numBytes = x
+	numBytes = 32 - (len(fileContents) % 32)
 	return
 }
 
