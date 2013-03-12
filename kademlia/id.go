@@ -1,6 +1,6 @@
 package kademlia
 
-// Contains definitions for the 160-bit identifiers used throughout kademlia.
+// Contains definitions for the 256-bit identifiers used throughout kademlia.
 
 import (
 	"encoding/hex"
@@ -8,7 +8,7 @@ import (
 	"math/rand"
 )
 
-// IDs are 160-bit ints. We're going to use byte arrays with a number of
+// IDs are 256-bit ints. We're going to use byte arrays with a number of
 // methods.
 const IDBytes = 32
 
