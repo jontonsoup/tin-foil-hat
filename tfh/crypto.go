@@ -21,7 +21,8 @@ func (tfh *TFH) encryptFile() {
 // a hash representing a way to
 func Encrypt(filePath string) (outStr string, err error) {
 
-	outStr, _ = hashFile(filePath)
+	fileContents := parseFile(filePath)
+	outStr, _ = hashFile(fileContents)
 
 	//determine how much we need to pad unencrypted file to make it mod 256 bit (append to output key (for user))
 
@@ -59,8 +60,42 @@ func Decrypt(key string) (outStr string, err error) {
 }
 
 
-func hashFile(filePath string) (outStr string, err error) {
-	fileContents := parseFile(filePath)
+func aesEncryptFile(msg []byte) {
+    // some key, 16 Byte long
+    key := []byte{0x2c, 0x88, 0x25, 0x1a, 0xaa, 0xae, 0xc2, 0xa2, 0xaf, 0xe7, 0x84, 0x8a, 0x10, 0xcf, 0xe3, 0x2a};
+
+    Println("len of message: ", len(msg));
+    Println("len of key: ", len(key));
+    // create the new cipher
+    c, err := aes.NewCipher(key);
+    if err != nil {
+   Println("Error: NewCipher(%d bytes) = %s", len(key), err);
+   os.Exit(-1);
+ }
+
+    // now we convert our string into 32 long byte array
+    msgbuf := strings.Bytes(msg);
+    out := make([]byte, len(msg));
+
+    c.Encrypt(msgbuf[0:16], out[0:16]);   // encrypt the first half
+    c.Encrypt(msgbuf[16:32], out[16:32]); // encrypt the second half
+
+    Println("len of encrypted: ", len(out));
+    Println(">> ", out);
+
+    // now we decrypt our encrypted text
+    plain := make([]byte, len(out));
+    c.Decrypt(out[0:16], plain[0:16]);   // decrypt the first half
+    c.Decrypt(out[16:32], plain[16:32]); // decrypt the second half
+
+    Println("msg: ", string(plain));
+}
+
+
+}
+
+
+func hashFile(fileContents []byte) (outStr string, err error) {
 
 	//compute the SHA on the untouched file for sanity check
 	h := sha256.New()
