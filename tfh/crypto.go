@@ -57,7 +57,6 @@ func Decrypt(key string) (outStr string, err error) {
 	return
 }
 
-
 func aesEncryptFile(msg []byte, inputkey string) {
 	// some key, 32 Byte long
 	key := []byte(inputkey)
@@ -94,6 +93,14 @@ func aesEncryptFile(msg []byte, inputkey string) {
 	// fmt.Println("msg: ", plain)
 }
 
+func padFile(fileContents []byte, numBytesPadding int) (paddedFile []byte) {
+	paddedFile = make([]byte, len(fileContents)+numBytesPadding)
+	for i := 0; i < len(fileContents); i++ {
+		paddedFile[i] = fileContents[i]
+	}
+	return
+}
+
 // deconstructs the user's key string to find out things like padding, sha key, etc
 func destructureKeyString(key string) (padding []byte, unencHash []byte, chunks []byte) {
 	b := []byte(key)
@@ -104,8 +111,8 @@ func destructureKeyString(key string) (padding []byte, unencHash []byte, chunks 
 }
 
 // Returns number of bytes to pad to make given file mod 32 byte
-func numBytesToPad(fileContents []byte) (numBytes uint16) {
-	numBytes = uint16(32 - (len(fileContents) % 32))
+func numBytesToPad(fileContents []byte) (numBytes int) {
+	numBytes = 32 - (len(fileContents) % 32)
 	return
 }
 
