@@ -21,11 +21,15 @@ func (tfh *TFH) runCommand(s string) (outStr string, err error) {
 	switch fields[0] {
 
 	case "encrypt":
-		if len(fields) != 2 {
-			err = errors.New("usage: Path to file")
+		if len(fields) != 3 {
+			err = errors.New("usage: Path to file | 32 character key")
 			return
 		}
-		outStr, err = Encrypt(fields[1])
+		if len(fields[2]) != 32 {
+			err = errors.New("ERROR: you must have a 32 character key")
+			return
+		}
+		outStr, err = Encrypt(fields[1], fields[2])
 		return
 
 	case "decrypt":
