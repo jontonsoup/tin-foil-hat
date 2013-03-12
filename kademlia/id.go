@@ -14,6 +14,18 @@ const IDBytes = 20
 
 type ID [IDBytes]byte
 
+func fromBytes(bs []byte) (ID, error) {
+	id := *new(ID)
+	if len(bs) != IDBytes {
+		return id, errors.New("Wrong size bytearray")
+	}
+
+	for i, b := range bs {
+		id[i] = b
+	}
+	return id, nil
+}
+
 func (id ID) AsString() string {
 	return hex.EncodeToString(id[0:IDBytes])
 }
