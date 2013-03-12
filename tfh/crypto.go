@@ -39,6 +39,26 @@ func Encrypt(filePath string) (outStr string, err error) {
 }
 
 
+
+
+func Decrypt(key string) (outStr string, err error) {
+	//deconstruct key into parts
+
+	//randomly call find on parts
+
+	//check to see if each part matches its SHA key (for file integrity)
+
+	//order parts
+
+	//decrypt whole ordered file
+
+	//remove padding from file
+
+	//return file bytes to user
+	return
+}
+
+
 func hashFile(filePath string) (outStr string, err error) {
 	fileContents := parseFile(filePath)
 
@@ -49,6 +69,7 @@ func hashFile(filePath string) (outStr string, err error) {
 	outStr = fmt.Sprintf("% x", shaSum)
 	return
 }
+
 
 func parseFile(filePath string) (fileContents []byte) {
 	// open the file
@@ -72,22 +93,5 @@ func parseFile(filePath string) (fileContents []byte) {
 		return
 	}
 
-	return
-}
-
-func Decrypt(key string) (outStr string, err error) {
-	//deconstruct key into parts
-
-	//randomly call find on parts
-
-	//check to see if each part matches its SHA key (for file integrity)
-
-	//order parts
-
-	//decrypt whole ordered file
-
-	//remove padding from file
-
-	//return file bytes to user
 	return
 }
