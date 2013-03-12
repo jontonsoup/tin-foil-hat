@@ -1,4 +1,4 @@
-package kademlia
+package main
 
 import (
 	// "crypto/aes"
@@ -7,6 +7,10 @@ import (
 	"fmt"
 	"os"
 )
+
+func (tfh *TFH) encryptFile() {
+
+}
 
 //
 // [2 bytes = length of padding ][32 bytes SHA hash of unencrypted file whole file][... X number of SHA hashes for file chunks]

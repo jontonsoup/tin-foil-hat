@@ -25,7 +25,7 @@ func (tfh *TFH) runCommand(s string) (outStr string, err error) {
 			err = errors.New("usage: Path to file")
 			return
 		}
-		outStr, err = kademlia.Encrypt(fields[1])
+		outStr, err = Encrypt(fields[1])
 		return
 
 	case "decrypt":
