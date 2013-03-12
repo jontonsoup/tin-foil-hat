@@ -2,6 +2,7 @@ package kademlia
 
 import (
 	"crypto/sha256"
+	"errors"
 )
 
 func HashStore(k *Kademlia, value []byte) (hash []byte, err error) {
@@ -16,5 +17,18 @@ func HashStore(k *Kademlia, value []byte) (hash []byte, err error) {
 
 func Hash(bs []byte) []byte {
 	h := sha256.New()
-	return h.Sum(bs)
+	h.Write(bs)
+
+	return h.Sum(nil)
+}
+
+func Verify(key ID, value []byte) error {
+	bs := key[:]
+	hash := Hash(bs)
+	for i, b := range hash {
+		if uint(b) != uint(hash[i]) {
+			return errors.New("verify failure")
+		}
+	}
+	return nil
 }

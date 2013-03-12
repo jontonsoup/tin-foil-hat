@@ -23,6 +23,10 @@ func (k *Kademlia) Store(req StoreRequest, res *StoreResult) error {
 	log.Println("Handling store request from", req.Sender.Address())
 	k.updateContact(req.Sender)
 	res.MsgID = req.MsgID
+	err := Verify(req.Key, req.Value)
+	if err != nil {
+		return err
+	}
 	k.Table[req.Key] = req.Value
 	res.Err = nil
 	return nil
