@@ -1,7 +1,7 @@
 package main
 
 import (
-	// "crypto/aes"
+	//"crypto/aes"
 	"crypto/sha256"
 	"errors"
 	"fmt"
@@ -36,6 +36,16 @@ func Encrypt(filePath string) (outStr string, err error) {
 	//do until all chunks are stored
 
 	//return completed key to user
+	return
+}
+
+// Returns number of bytes to pad to make given file mod 32 byte
+func numBytesToPad(fileContents []byte) (numBytes int) {
+	x := len(fileContents) % 32
+	if x <= 16 {
+		x = 32 - x
+	}
+	numBytes = x
 	return
 }
 
