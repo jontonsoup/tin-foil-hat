@@ -23,8 +23,10 @@ func Encrypt(filePath string, key string) (outStr string, err error) {
 
 	fileContents := parseFile(filePath)
 	outStr, _ = hashFile(fileContents)
-	aesEncryptFile(fileContents, key)
-
+	encrypted_file := aesEncryptFile(fileContents, key)
+	plain_text := aesDecryptFile(encrypted_file, key)
+	fmt.Println("before: ", string(fileContents))
+	fmt.Println("after: ", string(plain_text))
 	//determine how much we need to pad unencrypted file to make it mod 256 bit (append to output key (for user))
 
 	//encrypt file with SHA hash as key with AES and append to output key (for user)
@@ -57,13 +59,11 @@ func Decrypt(key string) (outStr string, err error) {
 	return
 }
 
-func aesEncryptFile(msg []byte, inputkey string) {
+func aesEncryptFile(msg []byte, inputkey string) (encrypted_file []byte) {
 	numPadBytes := numBytesToPad(msg)
 	msg = padFile(msg, numPadBytes)
 	// some key, 32 Byte long
 	key := []byte(inputkey)
-	str := string(key)
-	fmt.Println("key: ", str)
 
 	// create the new cipher
 	c, err := aes.NewCipher(key)
@@ -72,34 +72,34 @@ func aesEncryptFile(msg []byte, inputkey string) {
 		os.Exit(-1)
 	}
 
-	encrypted_file := make([]byte, len(msg))
+	encrypted_file = make([]byte, 0)
 	encrypt_block := make([]byte, c.BlockSize())
 
-	for i := 0; (i + c.BlockSize()) != len(msg); i = i + c.BlockSize() {
+	for i := 0; i != len(msg); i = i + c.BlockSize() {
 		c.Encrypt(encrypt_block, msg[i:i+c.BlockSize()])
-		fmt.Println("cryp: ", encrypt_block)
-		//the append isnt working correctly
 		encrypted_file = append(encrypted_file, encrypt_block...)
 	}
-	fmt.Println("cryp: ", encrypted_file[16:32])
-	// fmt.Println("block: ", encrypted_file)
-	fmt.Println("len of encrypted: ", len(encrypted_file))
-	// fmt.Println(">> ", encrypted_file)
+	return encrypted_file
 
-	// // now we decrypt our encrypted text
-	// plain := make([]byte, len(msg))
-	// decrypt_block := make([]byte, c.BlockSize())
-	// for i := 0; (i + c.BlockSize()) != len(msg); i = i + c.BlockSize() {
-	// 	c.Decrypt(decrypt_block, encrypted_file[i:i+c.BlockSize()])
-	// 	plain = append(plain, decrypt_block...)
-	// }
+}
 
-	// fmt.Println("msg: ", msg[:16])
-	// fmt.Println("cryp: ", encrypted_file[:16])
-	// fmt.Println("plain: ", plain[:16])
- //  fmt.Println("message: ", len(msg))
-	// fmt.Println("msg: ", len(plain))
+func aesDecryptFile(encrypted_file []byte, inputkey string) (string) {
+	key := []byte(inputkey)
+	c, err := aes.NewCipher(key)
+	if err != nil {
+		fmt.Println("Error: NewCipher(%d bytes) = %s", len(key), err)
+		os.Exit(-1)
+	}
 
+	// now we decrypt our encrypted text
+	plain_text := make([]byte, 0)
+	decrypt_block := make([]byte, c.BlockSize())
+	for i := 0; i != len(encrypted_file); i = i + c.BlockSize() {
+		c.Decrypt(decrypt_block, encrypted_file[i:i+c.BlockSize()])
+		plain_text = append(plain_text, decrypt_block...)
+	}
+
+	return string(plain_text)
 }
 
 func padFile(fileContents []byte, numBytesPadding int) (paddedFile []byte) {
