@@ -72,6 +72,7 @@ func aesEncryptFile(msg []byte, inputkey string) {
 	key := []byte(inputkey)
 	str := string(key)
 	fmt.Println("key: ", str)
+	// fmt.Println("message: ", msg)
 
 	// // create the new cipher
 	c, err := aes.NewCipher(key)
@@ -80,18 +81,27 @@ func aesEncryptFile(msg []byte, inputkey string) {
 		os.Exit(-1)
 	}
 
-	out := make([]byte, len(msg))
+	encrypted_file := make([]byte, len(msg))
+	out := make([]byte, 16)
 
-	c.Encrypt(msg, out)
+	for i := 0; i < len(msg) - 16 ; i = i + 16 {
+		c.Encrypt(out, msg[i:i+15])
+		encrypted_file = append(encrypted_file, out...)
+	}
 
-	fmt.Println("len of encrypted: ", len(out))
-	fmt.Println(">> ", out)
+	fmt.Println("len of encrypted: ", len(encrypted_file))
+	fmt.Println(">> ", encrypted_file)
 
 	// now we decrypt our encrypted text
 	plain := make([]byte, len(out))
-	c.Decrypt(out, plain)
+	decrypt_block := make([]byte, 16)
+	for i := 0; i < len(encrypted_file) - 16; i = i + 16 {
+		c.Decrypt(decrypt_block, encrypted_file[i:i+15])
+		plain = append(plain, decrypt_block...)
+	}
 
-	fmt.Println("msg: ", string(plain))
+
+	// fmt.Println("msg: ", plain)
 }
 
 func hashFile(fileContents []byte) (outStr string, err error) {
