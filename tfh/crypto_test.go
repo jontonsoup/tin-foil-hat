@@ -42,20 +42,18 @@ func TestSplitBytes(t *testing.T) {
 	}
 	// each byte array in the split array should correspond to a
 	// slice of the original array
-	/*
-		for i, bs := range split {
-			if len(bs) != CHUNK_SIZE {
-				t.Log("encrypted chunks should be", CHUNK_SIZE, "long")
+	for i, bs := range split {
+		if len(bs) != CHUNK_SIZE {
+			t.Log("encrypted chunks should be", CHUNK_SIZE, "long")
+			t.Fail()
+		}
+		for j, b := range bs {
+			if uint(encrypted[i*CHUNK_SIZE+j]) != uint(b) {
+				t.Log("Split bytes don't match original")
 				t.Fail()
 			}
-			for j, b := range bs {
-				if uint(encrypted[i*CHUNK_SIZE+j]) != uint(b) {
-					t.Log("Split bytes don't match original")
-					t.Fail()
-				}
-			}
 		}
-	*/
+	}
 	return
 }
 

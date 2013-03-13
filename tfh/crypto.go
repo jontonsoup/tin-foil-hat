@@ -37,29 +37,19 @@ func (tfh *TFH) encryptAndStore(filePath, key string) (outStr string, err error)
 
 // takes a file path and ecrypts that file, returning
 // a hash representing a way to
-/*
-func Encrypt(filePath string, key string) (outStr string, err error) {
 
-	fileContents := parseFile(filePath)
-	outStr, _ = hashFile(fileContents)
-	encrypted_file := aesEncryptFile(fileContents, key)
-	plain_text := aesDecryptFile(encrypted_file, key)
-	fmt.Println("before: ", string(fileContents))
-	fmt.Println("after: ", string(plain_text))
-	//determine how much we need to pad unencrypted file to make it mod 256 bit (append to output key (for user))
+//determine how much we need to pad unencrypted file to make it mod 256 bit (append to output key (for user))
 
-	//encrypt file with SHA hash as key with AES and append to output key (for user)
+//encrypt file with SHA hash as key with AES and append to output key (for user)
 
-	//split file into 256 bit chunks
+//split file into 256 bit chunks
 
-	//compute SHA hash of chunk in order append to output key (for user)
+//compute SHA hash of chunk in order append to output key (for user)
 
-	//randomly choose a chunk, send chunk out to store
-	//do until all chunks are stored
+//randomly choose a chunk, send chunk out to store
+//do until all chunks are stored
 
-	//return completed key to user
-	return
-}*/
+//return completed key to user
 
 func Decrypt(key string) (outStr string, err error) {
 	//deconstruct key into parts
@@ -180,8 +170,7 @@ func parseFile(filePath string) (fileContents []byte) {
 }
 
 func splitBytes(b []byte) (split [][]byte) {
-	size := len(b) / CHUNK_SIZE
-	for i := 0; i < size; i++ {
+	for i := 0; i < len(b); i += CHUNK_SIZE {
 		split = append(split, b[i:i+CHUNK_SIZE])
 	}
 	return
