@@ -20,8 +20,42 @@ func TestEncrypt(t *testing.T) {
 	}
 	if len(encrypted)%CHUNK_SIZE != 0 {
 		t.Log("Encrypted file should be splittable into", CHUNK_SIZE, "byte chunks")
+		t.Log("But it has size", len(encrypted))
 		t.Fail()
 	}
+	return
+}
+
+func TestSplitBytes(t *testing.T) {
+	key := "zDglWUd5gbjArrcjxbg8t4Wfspszpxyp"
+	fileContents := parseFile("crypto_test.go")
+	encrypted := encrypt(fileContents, key)
+	split := splitBytes(encrypted)
+
+	totalSplitSize := 0
+	for _, bytes := range split {
+		totalSplitSize += len(bytes)
+	}
+	if totalSplitSize != len(encrypted) {
+		t.Log("Encrypted and split aren't the same size")
+		t.Fail()
+	}
+	// each byte array in the split array should correspond to a
+	// slice of the original array
+	/*
+		for i, bs := range split {
+			if len(bs) != CHUNK_SIZE {
+				t.Log("encrypted chunks should be", CHUNK_SIZE, "long")
+				t.Fail()
+			}
+			for j, b := range bs {
+				if uint(encrypted[i*CHUNK_SIZE+j]) != uint(b) {
+					t.Log("Split bytes don't match original")
+					t.Fail()
+				}
+			}
+		}
+	*/
 	return
 }
 

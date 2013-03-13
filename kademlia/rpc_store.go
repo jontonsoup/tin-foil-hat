@@ -77,7 +77,7 @@ func IterativeStore(k *Kademlia, key ID, value []byte) (lastID ID, err error) {
 		SendStore(k, key, value, node.NodeID)
 	}
 
-	log.Println("Found", len(nodes), nodes)
+	//	log.Println("Found", len(nodes), nodes)
 	lastID = nodes[len(nodes)-1].NodeID
 
 	return

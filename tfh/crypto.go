@@ -5,20 +5,27 @@ import (
 	"crypto/sha256"
 	"errors"
 	"fmt"
+	"kademlia-secure/kademlia"
 	"os"
 )
 
-const CHUNK_SIZE = 256
+const CHUNK_SIZE = 32
 
 func (tfh *TFH) encryptAndStore(filePath, key string) (outStr string, err error) {
 	fileContents := parseFile(filePath)
 	outStr, err = hashFile(fileContents)
 	if err != nil {
-		fmt.Println("Hash Failed somehow")
+		return
 	}
-	//	encryptedBytes := encrypt(fileContents, key)
+	encryptedBytes := encrypt(fileContents, key)
 
-	//	parts := splitBytes(encryptedBytes)
+	parts := splitBytes(encryptedBytes)
+	_, err = tfh.storeAll(parts)
+	if err != nil {
+		return
+	}
+
+	// append the keys to the outstr
 
 	return
 }
@@ -169,5 +176,37 @@ func parseFile(filePath string) (fileContents []byte) {
 		return
 	}
 
+	return
+}
+
+func splitBytes(b []byte) (split [][]byte) {
+	size := len(b) / CHUNK_SIZE
+	for i := 0; i < size; i++ {
+		split = append(split, b[i:i+CHUNK_SIZE])
+	}
+	return
+}
+
+// returns the keys in the same order they were 
+func (tfh *TFH) storeAll(vals [][]byte) (keys [][]byte, err error) {
+	keys = make([][]byte, len(vals))
+	order := randomOrder(len(vals))
+
+	for _, i := range order {
+		keys[i], err = kademlia.HashStore(tfh.kadem, vals[i])
+		if err != nil {
+			return
+		}
+	}
+
+	return
+}
+
+// TODO: make actually random
+func randomOrder(length int) (order []int) {
+	order = make([]int, length)
+	for i := 0; i < length; i++ {
+		order[i] = i
+	}
 	return
 }
