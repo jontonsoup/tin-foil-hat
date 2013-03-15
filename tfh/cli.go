@@ -16,7 +16,6 @@ import (
 func (tfh *TFH) runCommand(s string) (outStr string, err error) {
 	fields := strings.Fields(s)
 	if len(fields) == 0 {
-		err = errors.New("You need some fields for runCommand")
 		return
 	}
 

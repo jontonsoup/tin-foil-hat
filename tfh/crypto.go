@@ -3,6 +3,7 @@ package main
 import (
 	"crypto/aes"
 	"crypto/sha256"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"kademlia-secure/kademlia"
@@ -11,22 +12,28 @@ import (
 
 const CHUNK_SIZE = 32
 
-func (tfh *TFH) encryptAndStore(filePath, key string) (outStr string, err error) {
+func (tfh *TFH) encryptAndStore(filePath, key string) (decryptKeyStr string, err error) {
 	fileContents := parseFile(filePath)
-	outStr, err = hashFile(fileContents)
+	tk := new(tfhKey)
+	tk.EncryptKey = []byte(key)
+	tk.Hash, err = hashFile(fileContents)
 	if err != nil {
 		return
 	}
-	encryptedBytes := encrypt(fileContents, key)
+	var encryptedBytes []byte
+	encryptedBytes, tk.NumPadBytes = encrypt(fileContents, tk.EncryptKey)
 
 	parts := splitBytes(encryptedBytes)
-	_, err = tfh.storeAll(parts)
+	tk.PartKeys, err = tfh.storeAll(parts)
 	if err != nil {
 		return
 	}
 
 	// append the keys to the outstr
-
+	decryptKey, err := tk.serialize()
+	if err == nil {
+		decryptKeyStr = hex.EncodeToString(decryptKey)
+	}
 	return
 }
 
@@ -68,8 +75,8 @@ func Decrypt(key string) (outStr string, err error) {
 	return
 }
 
-func encrypt(msg []byte, inputkey string) (encrypted_file []byte) {
-	numPadBytes := numBytesToPad(msg)
+func encrypt(msg []byte, inputkey []byte) (encrypted_file []byte, numPadBytes int) {
+	numPadBytes = numBytesToPad(msg)
 	msg = padFile(msg, numPadBytes)
 	// some key, 32 Byte long
 	key := []byte(inputkey)
@@ -88,12 +95,11 @@ func encrypt(msg []byte, inputkey string) (encrypted_file []byte) {
 		c.Encrypt(encrypt_block, msg[i:i+c.BlockSize()])
 		encrypted_file = append(encrypted_file, encrypt_block...)
 	}
-	return encrypted_file
+	return
 
 }
 
-func decrypt(encrypted_file []byte, inputkey string) []byte {
-	key := []byte(inputkey)
+func decrypt(encrypted_file []byte, key []byte) []byte {
 	c, err := aes.NewCipher(key)
 	if err != nil {
 		fmt.Println("Error: NewCipher(%d bytes) = %s", len(key), err)
@@ -134,13 +140,12 @@ func numBytesToPad(fileContents []byte) (numBytes int) {
 	return
 }
 
-func hashFile(fileContents []byte) (outStr string, err error) {
+func hashFile(fileContents []byte) (hash []byte, err error) {
 
 	//compute the SHA on the untouched file for sanity check
 	h := sha256.New()
 	h.Write(fileContents)
-	shaSum := h.Sum(nil)
-	outStr = fmt.Sprintf("% x", shaSum)
+	hash = h.Sum(nil)
 	return
 }
 

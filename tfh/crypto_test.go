@@ -6,9 +6,9 @@ import (
 )
 
 func TestEncrypt(t *testing.T) {
-	key := "xDG8KiW148cwUQIPS23pHxPSVppD8VIH"
+	key := []byte("xDG8KiW148cwUQIPS23pHxPSVppD8VIH")
 	fileContents := parseFile("crypto_test.go")
-	encrypted := encrypt(fileContents, key)
+	encrypted, _ := encrypt(fileContents, key)
 	decrypted := decrypt(encrypted, key)
 	for i, b := range fileContents {
 		if uint(b) != uint(decrypted[i]) {
@@ -27,9 +27,9 @@ func TestEncrypt(t *testing.T) {
 }
 
 func TestSplitBytes(t *testing.T) {
-	key := "zDglWUd5gbjArrcjxbg8t4Wfspszpxyp"
+	key := []byte("zDglWUd5gbjArrcjxbg8t4Wfspszpxyp")
 	fileContents := parseFile("crypto_test.go")
-	encrypted := encrypt(fileContents, key)
+	encrypted, _ := encrypt(fileContents, key)
 	split := splitBytes(encrypted)
 
 	totalSplitSize := 0
