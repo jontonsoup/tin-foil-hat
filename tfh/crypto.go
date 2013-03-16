@@ -215,7 +215,7 @@ func randomOrder(length int) (order []int) {
 }
 
 
-// returns the keys in the same order they were
+// returns the keys in the not the same order they were
 func (tfh *TFH) findAll(keys [][]byte) (values [][]byte, err error) {
 	fmt.Println("FINDING SHIT")
 	values = make([][]byte, len(keys))
