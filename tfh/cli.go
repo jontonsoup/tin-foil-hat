@@ -38,6 +38,7 @@ func (tfh *TFH) runCommand(s string) (outStr string, err error) {
 			err = errors.New("usage: key")
 			return
 		}
+		outStr, err = tfh.decryptAndGet(fields[1])
 		return
 
 	case "whoami":

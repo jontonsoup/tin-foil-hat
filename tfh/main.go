@@ -79,7 +79,6 @@ func main() {
 		}
 		str, err := tfh.runCommand(line)
 		if err == nil {
-			fmt.Println("yolo")
 			fmt.Println(str)
 		} else {
 			fmt.Println(err)

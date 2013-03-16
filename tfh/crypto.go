@@ -58,9 +58,14 @@ func (tfh *TFH) encryptAndStore(filePath, key string) (decryptKeyStr string, err
 
 //return completed key to user
 
-func Decrypt(key string) (outStr string, err error) {
+func (tfh *TFH) decryptAndGet(key string) (outStr string, err error) {
 	//deconstruct key into parts
+	keybytes, _ := hex.DecodeString(key)
+	tfhkey, _ := unSerialize(keybytes)
 
+	fmt.Println("Padding: ", tfhkey.NumPadBytes)
+	fmt.Println("unencHash: ", tfhkey.Hash)
+	fmt.Println("chunks: ", tfhkey.PartKeys)
 	//randomly call find on parts
 
 	//check to see if each part matches its SHA key (for file integrity)
@@ -77,6 +82,7 @@ func Decrypt(key string) (outStr string, err error) {
 
 func encrypt(msg []byte, inputkey []byte) (encrypted_file []byte, numPadBytes int) {
 	numPadBytes = numBytesToPad(msg)
+	fmt.Println("pad:", numPadBytes)
 	msg = padFile(msg, numPadBytes)
 	// some key, 32 Byte long
 	key := []byte(inputkey)
@@ -181,7 +187,7 @@ func splitBytes(b []byte) (split [][]byte) {
 	return
 }
 
-// returns the keys in the same order they were 
+// returns the keys in the same order they were
 func (tfh *TFH) storeAll(vals [][]byte) (keys [][]byte, err error) {
 	keys = make([][]byte, len(vals))
 	order := randomOrder(len(vals))
