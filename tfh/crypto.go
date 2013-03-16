@@ -66,8 +66,12 @@ func (tfh *TFH) decryptAndGet(key string) (outStr string, err error) {
 	tfhkey, _ := unSerialize(keybytes)
 
 
-	tfh.findAll(tfhkey.PartKeys)
-	fmt.Println("DONE FINDING: ")
+	bytes, _ := tfh.findAll(tfhkey.PartKeys)
+	//this needs to be fixed (it needs to flatten the results array)
+	decryptBytes := decrypt(bytes[0], tfhkey.EncryptKey)
+	fmt.Println("DONE FINDING: ", string(decryptBytes))
+
+
 	//randomly call find on parts
 
 	//check to see if each part matches its SHA key (for file integrity)
