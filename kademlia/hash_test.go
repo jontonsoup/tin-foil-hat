@@ -21,7 +21,7 @@ func TestHash(t *testing.T) {
 		t.Log("Wrong sized hash: ", len(hash))
 		t.Fail()
 	}
-	_, err := fromBytes(hash)
+	_, err := FromBytes(hash)
 	if err != nil {
 		t.Log(err)
 		t.Fail()
@@ -32,9 +32,9 @@ func TestHash(t *testing.T) {
 func TestVerify(t *testing.T) {
 	b1 := []byte("test")
 	hash := Hash(b1)
-	key, err := fromBytes(hash)
+	key, err := FromBytes(hash)
 	if err != nil {
-		t.Log("fromBytes err")
+		t.Log("FromBytes err")
 		t.Fail()
 	}
 	err = Verify(key, b1)
