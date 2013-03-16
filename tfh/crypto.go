@@ -214,7 +214,6 @@ func randomOrder(length int) (order []int) {
 	return
 }
 
-
 // returns the keys in the not the same order they were
 func (tfh *TFH) findAll(keys [][]byte) (values [][]byte, err error) {
 	fmt.Println("FINDING SHIT")
@@ -225,12 +224,12 @@ func (tfh *TFH) findAll(keys [][]byte) (values [][]byte, err error) {
 		id, _ := kademlia.FromBytes(keys[i])
 		fmt.Println("FINDING:", id.AsString())
 		findValResult, errCheck := kademlia.IterativeFindValue(tfh.kadem, id)
-		values[i] = findValResult.Value
-		fmt.Println("VALUE", values[i])
 		if errCheck != nil {
 			err = errors.New(fmt.Sprintf("Iterative find value error: %v", err))
 			return
 		}
+		values[i] = findValResult.Value
+		fmt.Println("VALUE", values[i])
 
 		// if value exists, print it and return
 		if values[i] != nil {

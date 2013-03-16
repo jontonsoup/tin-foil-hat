@@ -81,6 +81,13 @@ func (k *Kademlia) FindValue(req FindValueRequest, res *FindValueResult) error {
 }
 
 func IterativeFindValue(k *Kademlia, searchID ID) (FindValueResult, error) {
+	val, ok := LocalLookup(k, searchID)
+	if ok {
+		res := new(FindValueResult)
+		res.Value = val
+		return *res, nil
+	}
+
 	shortList := list.New()
 	alreadySeen := make(map[ID]bool)
 
