@@ -23,6 +23,8 @@ func (tfh *TFH) encryptAndStore(filePath, key string) (decryptKeyStr string, err
 	var encryptedBytes []byte
 	encryptedBytes, tk.NumPadBytes = encrypt(fileContents, tk.EncryptKey)
 
+	fmt.Println("enc file:", encryptedBytes)
+
 	parts := splitBytes(encryptedBytes)
 	tk.PartKeys, err = tfh.storeAll(parts)
 	if err != nil {
@@ -63,9 +65,6 @@ func (tfh *TFH) decryptAndGet(key string) (outStr string, err error) {
 	keybytes, _ := hex.DecodeString(key)
 	tfhkey, _ := unSerialize(keybytes)
 
-	fmt.Println("Padding: ", tfhkey.NumPadBytes)
-	fmt.Println("unencHash: ", tfhkey.Hash)
-	fmt.Println("chunks: ", tfhkey.PartKeys)
 
 	tfh.findAll(tfhkey.PartKeys)
 	fmt.Println("DONE FINDING: ")
