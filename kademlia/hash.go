@@ -8,7 +8,7 @@ import (
 
 func HashStore(k *Kademlia, value []byte) (hash []byte, err error) {
 	hash = Hash(value)
-	key, err := fromBytes(hash)
+	key, err := FromBytes(hash)
 	if err != nil {
 		return
 	}

@@ -14,7 +14,7 @@ const IDBytes = 32
 
 type ID [IDBytes]byte
 
-func fromBytes(bs []byte) (ID, error) {
+func FromBytes(bs []byte) (ID, error) {
 	id := *new(ID)
 	if len(bs) != IDBytes {
 		return id, errors.New("Wrong size bytearray")
@@ -85,7 +85,7 @@ func (id ID) OnesIndices() (ones map[int]bool) {
 			ones[index] = (id[i]>>uint8(j))&0x1 != 0
 		}
 	}
-	// 
+	//
 	ones[8*IDBytes] = true
 	return ones
 }
@@ -103,7 +103,7 @@ func NewRandomID() (ret ID) {
 func NewRandomWithPrefix(source ID, prefixLen int) (ret ID) {
 	ret = NewRandomID()
 
-outer: // 
+outer: //
 	for i := 0; i < IDBytes; i++ {
 		for j := 0; j < 8; j++ {
 			if i*8+j > prefixLen {

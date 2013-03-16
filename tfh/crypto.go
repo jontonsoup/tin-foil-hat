@@ -66,6 +66,9 @@ func (tfh *TFH) decryptAndGet(key string) (outStr string, err error) {
 	fmt.Println("Padding: ", tfhkey.NumPadBytes)
 	fmt.Println("unencHash: ", tfhkey.Hash)
 	fmt.Println("chunks: ", tfhkey.PartKeys)
+
+	tfh.findAll(tfhkey.PartKeys)
+	fmt.Println("DONE FINDING: ")
 	//randomly call find on parts
 
 	//check to see if each part matches its SHA key (for file integrity)
@@ -208,5 +211,33 @@ func randomOrder(length int) (order []int) {
 	for i := 0; i < length; i++ {
 		order[i] = i
 	}
+	return
+}
+
+
+// returns the keys in the same order they were
+func (tfh *TFH) findAll(keys [][]byte) (values [][]byte, err error) {
+	fmt.Println("FINDING SHIT")
+	values = make([][]byte, len(keys))
+	order := randomOrder(len(keys))
+
+	for _, i := range order {
+		id, _ := kademlia.FromBytes(keys[i])
+		fmt.Println("FINDING:", id.AsString())
+		findValResult, errCheck := kademlia.IterativeFindValue(tfh.kadem, id)
+		values[i] = findValResult.Value
+		fmt.Println("VALUE", values[i])
+		if errCheck != nil {
+			err = errors.New(fmt.Sprintf("Iterative find value error: %v", err))
+			return
+		}
+
+		// if value exists, print it and return
+		if values[i] != nil {
+			fmt.Sprintf("%v %v", id.AsString(), string(values[i]))
+			return
+		}
+	}
+
 	return
 }
