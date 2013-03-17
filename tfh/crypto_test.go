@@ -94,3 +94,13 @@ func TestPadFile(t *testing.T) {
 		}
 	}
 }
+
+func TestRandomOrder(t *testing.T) {
+	// make sure the right number of indices are returned
+	numInds := 5
+	r := randomOrder(numInds)
+	if len(r) != numInds {
+		t.Log("Expected", numInds, "indices, but got an array of length", r)
+		t.Fail()
+	}
+}

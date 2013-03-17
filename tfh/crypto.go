@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"kademlia-secure/kademlia"
+	"math/rand"
 	"os"
 )
 
@@ -207,11 +208,10 @@ func (tfh *TFH) storeAll(vals [][]byte) (keys [][]byte, err error) {
 	return
 }
 
-// TODO: make actually random
 func randomOrder(length int) (order []int) {
 	order = make([]int, length)
 	for i := 0; i < length; i++ {
-		order[i] = i
+		order[i] = int(rand.Intn(length))
 	}
 	return
 }
