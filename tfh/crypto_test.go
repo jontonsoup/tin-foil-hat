@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"testing"
 )
 
@@ -55,13 +54,6 @@ func TestSplitBytes(t *testing.T) {
 		}
 	}
 	return
-}
-
-func ExampleNumBytesToPad1() {
-	x := []byte{0, 0, 0, 0, 0}
-	fmt.Println(numBytesToPad(x))
-	// Output:
-	// 27
 }
 
 func TestNumBytesToPad(t *testing.T) {
