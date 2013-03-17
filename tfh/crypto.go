@@ -65,12 +65,10 @@ func (tfh *TFH) decryptAndGet(key string) (outStr string, err error) {
 	keybytes, _ := hex.DecodeString(key)
 	tfhkey, _ := unSerialize(keybytes)
 
-
 	bytes, _ := tfh.findAll(tfhkey.PartKeys)
 	//this needs to be fixed (it needs to flatten the results array)
 	decryptBytes := decrypt(bytes[0], tfhkey.EncryptKey)
 	fmt.Println("DONE FINDING: ", string(decryptBytes))
-
 
 	//randomly call find on parts
 
@@ -138,13 +136,14 @@ func padFile(fileContents []byte, numBytesPadding int) (paddedFile []byte) {
 }
 
 // deconstructs the user's key string to find out things like padding, sha key, etc
-func destructureKeyString(key string) (padding []byte, unencHash []byte, chunks []byte) {
-	b := []byte(key)
-	padding = b[:2]
-	unencHash = b[2:34]
-	chunks = b[34:]
-	return
-}
+// OUT OF DATE
+// func destructureKeyString(key string) (padding []byte, unencHash []byte, chunks []byte) {
+// 	b := []byte(key)
+// 	padding = b[:2]
+// 	unencHash = b[2:34]
+// 	chunks = b[34:]
+// 	return
+// }
 
 // Returns number of bytes to pad to make given file mod 32 byte
 func numBytesToPad(fileContents []byte) (numBytes int) {

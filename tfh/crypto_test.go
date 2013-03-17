@@ -64,18 +64,28 @@ func ExampleNumBytesToPad1() {
 	// 27
 }
 
-func ExampleNumBytesToPad2() {
-	x := []byte{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
-	fmt.Println(numBytesToPad(x))
-	// Output:
-	// 16
-}
-
-func ExampleNumBytesToPad3() {
-	x := []byte{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
-	fmt.Println(numBytesToPad(x))
-	// Output:
-	// 15
+func TestNumBytesToPad(t *testing.T) {
+	// less than 16 bytes...
+	x := []byte{0, 0, 0, 0, 0}
+	numBytes := numBytesToPad(x)
+	if numBytes != 27 {
+		t.Log("Expected", 27, ", but got ", numBytes)
+		t.Fail()
+	}
+	// 16 bytes...
+	x = []byte{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
+	numBytes = numBytesToPad(x)
+	if numBytes != 16 {
+		t.Log("Expected", 16, ", but got ", numBytes)
+		t.Fail()
+	}
+	// more than 16 bytes...
+	x = []byte{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
+	numBytes = numBytesToPad(x)
+	if numBytes != 15 {
+		t.Log("Expected", 15, ", but got ", numBytes)
+		t.Fail()
+	}
 }
 
 func TestPadFile(t *testing.T) {
