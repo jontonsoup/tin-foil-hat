@@ -31,14 +31,21 @@ func (tfh *TFH) runCommand(s string) (outStr string, err error) {
 			return
 		}
 		outStr, err = tfh.encryptAndStore(fields[1], fields[2])
+		decryptKeyStr := outStr
+		decryptKeyFilePath := "decryptKey.tfh"
+		tfh.storeDecryptKeyString(decryptKeyStr, decryptKeyFilePath)
+
+		outStr = decryptKeyFilePath
 		return
 
 	case "decrypt":
 		if len(fields) != 2 {
-			err = errors.New("usage: key")
+			err = errors.New("usage: decryptKeyFilePath")
 			return
 		}
-		outStr, err = tfh.decryptAndGet(fields[1])
+		decryptKeyFilePath := "decryptKey.tfh"
+		decryptKeyStr := tfh.retrieveDecryptKeyString(decryptKeyFilePath)
+		outStr, err = tfh.decryptAndGet(decryptKeyStr)
 		return
 
 	case "whoami":

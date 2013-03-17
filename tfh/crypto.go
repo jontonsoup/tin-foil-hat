@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"kademlia-secure/kademlia"
 	"math/rand"
 	"os"
@@ -37,6 +38,31 @@ func (tfh *TFH) encryptAndStore(filePath, key string) (decryptKeyStr string, err
 	if err == nil {
 		decryptKeyStr = hex.EncodeToString(decryptKey)
 	}
+	return
+}
+
+// store's the key at specified path
+func (tfh *TFH) storeDecryptKeyString(decryptKeyStr string, filePath string) {
+	// create and open the file, if none exists; overwrite if it does
+	file, err := os.Create(filePath)
+	if err != nil {
+		panic(err)
+	}
+	defer file.Close()
+	// write string to file
+	_, err = file.WriteString(decryptKeyStr)
+	if err != nil {
+		panic(err)
+	}
+	return
+}
+
+func (tfh *TFH) retrieveDecryptKeyString(filePath string) (decryptKeyStr string) {
+	content, err := ioutil.ReadFile(filePath)
+	if err != nil {
+		panic(err)
+	}
+	decryptKeyStr = string(content)
 	return
 }
 
