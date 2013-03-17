@@ -249,6 +249,6 @@ func flatten(byte_array [][]byte) (flattened_bytes []byte){
 
 func trim_decrypted_file(file []byte,  numToTrim int) (trimFile []byte){
 	fmt.Println("trimming ", numToTrim)
-	trimFile = file[0:-numToTrim]
+	trimFile = file[:-numToTrim]
 	return
 }
