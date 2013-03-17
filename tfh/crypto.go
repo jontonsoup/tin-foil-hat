@@ -67,8 +67,10 @@ func (tfh *TFH) decryptAndGet(key string) (outStr string, err error) {
 	tfhkey, _ := unSerialize(keybytes)
 
 	bytes, _ := tfh.findAll(tfhkey.PartKeys)
-	//this needs to be fixed (it needs to flatten the results array)
-	decryptBytes := decrypt(bytes[0], tfhkey.EncryptKey)
+	flattened_bytes := flatten(bytes)
+
+	decryptBytes := decrypt(flattened_bytes, tfhkey.EncryptKey)
+	decryptBytes = trim_decrypted_file(decryptBytes, tfhkey.NumPadBytes)
 	fmt.Println("DONE FINDING: ", string(decryptBytes))
 
 	//randomly call find on parts
@@ -136,15 +138,6 @@ func padFile(fileContents []byte, numBytesPadding int) (paddedFile []byte) {
 	return
 }
 
-// deconstructs the user's key string to find out things like padding, sha key, etc
-// OUT OF DATE
-// func destructureKeyString(key string) (padding []byte, unencHash []byte, chunks []byte) {
-// 	b := []byte(key)
-// 	padding = b[:2]
-// 	unencHash = b[2:34]
-// 	chunks = b[34:]
-// 	return
-// }
 
 // Returns number of bytes to pad to make given file mod 32 byte
 func numBytesToPad(fileContents []byte) (numBytes int) {
@@ -240,5 +233,22 @@ func (tfh *TFH) findAll(keys [][]byte) (values [][]byte, err error) {
 		}
 	}
 
+	return
+}
+
+func flatten(byte_array [][]byte) (flattened_bytes []byte){
+	fmt.Println("byte_array", byte_array)
+	flattened_bytes = make([]byte, 0)
+	fmt.Println("len", len(byte_array))
+	for i := 0; i < len(byte_array); i++ {
+		flattened_bytes = append(flattened_bytes, byte_array[i]...)
+	}
+		fmt.Println("flattened_bytes", flattened_bytes)
+	return
+}
+
+func trim_decrypted_file(file []byte,  numToTrim int) (trimFile []byte){
+	fmt.Println("trimming ", numToTrim)
+	trimFile = file[0:-numToTrim]
 	return
 }
