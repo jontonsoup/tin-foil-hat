@@ -96,7 +96,7 @@ func (tfh *TFH) decryptAndGet(key string) (outStr string, err error) {
 	flattened_bytes := flatten(bytes)
 
 	decryptBytes := decrypt(flattened_bytes, tfhkey.EncryptKey)
-	decryptBytes = trim_decrypted_file(decryptBytes, tfhkey.NumPadBytes)
+	decryptBytes = trimDecryptedFile(decryptBytes, tfhkey.NumPadBytes)
 	fmt.Println("DONE FINDING: ", string(decryptBytes))
 
 	//randomly call find on parts
@@ -163,7 +163,6 @@ func padFile(fileContents []byte, numBytesPadding int) (paddedFile []byte) {
 	}
 	return
 }
-
 
 // Returns number of bytes to pad to make given file mod 32 byte
 func numBytesToPad(fileContents []byte) (numBytes int) {
@@ -262,18 +261,18 @@ func (tfh *TFH) findAll(keys [][]byte) (values [][]byte, err error) {
 	return
 }
 
-func flatten(byte_array [][]byte) (flattened_bytes []byte){
+func flatten(byte_array [][]byte) (flattened_bytes []byte) {
 	fmt.Println("byte_array", byte_array)
 	flattened_bytes = make([]byte, 0)
 	fmt.Println("len", len(byte_array))
 	for i := 0; i < len(byte_array); i++ {
 		flattened_bytes = append(flattened_bytes, byte_array[i]...)
 	}
-		fmt.Println("flattened_bytes", flattened_bytes)
+	fmt.Println("flattened_bytes", flattened_bytes)
 	return
 }
 
-func trim_decrypted_file(file []byte,  numToTrim int) (trimFile []byte){
+func trimDecryptedFile(file []byte, numToTrim int) (trimFile []byte) {
 	fmt.Println("trimming ", numToTrim)
 	trimFile = file[:-numToTrim]
 	return
