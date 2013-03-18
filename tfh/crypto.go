@@ -265,11 +265,6 @@ func (tfh *TFH) findAll(keys [][]byte) (values [][]byte, err error) {
 		values[i] = findValResult.Value
 		fmt.Println("VALUE", values[i])
 
-		// if value exists, print it and return
-		if values[i] != nil {
-			fmt.Sprintf("%v %v", id.AsString(), string(values[i]))
-			return
-		}
 	}
 
 	return
