@@ -44,7 +44,7 @@ func (tfh *TFH) encryptAndStore(filePath, keyFilePath, key string) (returnPath s
 	return
 }
 
-// store's the key at specified path
+// stores the key at specified path
 func (tfh *TFH) storeDecryptKeyString(decryptKeyStr string, filePath string) {
 	// create and open the file, if none exists; overwrite if it does
 	file, err := os.Create(filePath)
@@ -54,6 +54,23 @@ func (tfh *TFH) storeDecryptKeyString(decryptKeyStr string, filePath string) {
 	defer file.Close()
 	// write string to file
 	_, err = file.WriteString(decryptKeyStr)
+	if err != nil {
+		panic(err)
+	}
+	return
+}
+
+
+// stores the file at the path
+func (tfh *TFH) writeFile(filepath string, data []byte) {
+	// create and open the file, if none exists; overwrite if it does
+	file, err := os.Create(filepath)
+	if err != nil {
+		panic(err)
+	}
+	defer file.Close()
+	// write string to file
+	_, err = file.Write(data)
 	if err != nil {
 		panic(err)
 	}
@@ -90,9 +107,9 @@ func (tfh *TFH) retrieveDecryptKeyString(filePath string) (decryptKeyStr string)
 
 //return completed key to user
 
-func (tfh *TFH) decryptAndGet(path string) (outStr string, err error) {
+func (tfh *TFH) decryptAndGet(pathToKey string, pathToFile string) (outStr string, err error) {
 	//deconstruct key into parts
-	key := tfh.retrieveDecryptKeyString(path)
+	key := tfh.retrieveDecryptKeyString(pathToKey)
 	keybytes, _ := hex.DecodeString(key)
 	tfhkey, _ := unSerialize(keybytes)
 
@@ -101,19 +118,10 @@ func (tfh *TFH) decryptAndGet(path string) (outStr string, err error) {
 
 	decryptBytes := decrypt(flattened_bytes, tfhkey.EncryptKey)
 	decryptBytes = trimDecryptedFile(decryptBytes, tfhkey.NumPadBytes)
+	tfh.writeFile(pathToFile, decryptBytes)
+	outStr = pathToFile
+
 	fmt.Println("DONE FINDING: ", string(decryptBytes))
-
-	//randomly call find on parts
-
-	//check to see if each part matches its SHA key (for file integrity)
-
-	//order parts
-
-	//decrypt whole ordered file
-
-	//remove padding from file
-
-	//return file bytes to user
 	return
 }
 

@@ -35,11 +35,11 @@ func (tfh *TFH) runCommand(s string) (outStr string, err error) {
 		return
 
 	case "decrypt":
-		if len(fields) != 2 {
-			err = errors.New("usage: decryptKeyFilePath")
+		if len(fields) != 3 {
+			err = errors.New("usage: path to key | path to output file")
 			return
 		}
-		outStr, err = tfh.decryptAndGet(fields[1])
+		outStr, err = tfh.decryptAndGet(fields[1], fields[2])
 		return
 
 	case "whoami":
