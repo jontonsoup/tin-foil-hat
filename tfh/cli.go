@@ -22,20 +22,16 @@ func (tfh *TFH) runCommand(s string) (outStr string, err error) {
 	switch fields[0] {
 
 	case "encrypt":
-		if len(fields) != 3 {
-			err = errors.New("usage: Path to file | 32 character key")
+		if len(fields) != 4 {
+			err = errors.New("usage: Path to file | path to keyfile | 32 character key")
 			return
 		}
-		if len(fields[2]) != 32 {
+		if len(fields[3]) != 32 {
 			err = errors.New("ERROR: you must have a 32 character key")
 			return
 		}
-		outStr, err = tfh.encryptAndStore(fields[1], fields[2])
-		decryptKeyStr := outStr
-		decryptKeyFilePath := "decryptKey.tfh"
-		tfh.storeDecryptKeyString(decryptKeyStr, decryptKeyFilePath)
+		outStr, err = tfh.encryptAndStore(fields[1], fields[2], fields[3])
 
-		outStr = decryptKeyFilePath
 		return
 
 	case "decrypt":
@@ -43,9 +39,7 @@ func (tfh *TFH) runCommand(s string) (outStr string, err error) {
 			err = errors.New("usage: decryptKeyFilePath")
 			return
 		}
-		decryptKeyFilePath := "decryptKey.tfh"
-		decryptKeyStr := tfh.retrieveDecryptKeyString(decryptKeyFilePath)
-		outStr, err = tfh.decryptAndGet(decryptKeyStr)
+		outStr, err = tfh.decryptAndGet(fields[1])
 		return
 
 	case "whoami":

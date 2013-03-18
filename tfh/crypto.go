@@ -14,7 +14,7 @@ import (
 
 const CHUNK_SIZE = 32
 
-func (tfh *TFH) encryptAndStore(filePath, key string) (decryptKeyStr string, err error) {
+func (tfh *TFH) encryptAndStore(filePath, keyFilePath, key string) (returnPath string, err error) {
 	fileContents := parseFile(filePath)
 	tk := new(tfhKey)
 	tk.EncryptKey = []byte(key)
@@ -35,9 +35,12 @@ func (tfh *TFH) encryptAndStore(filePath, key string) (decryptKeyStr string, err
 
 	// append the keys to the outstr
 	decryptKey, err := tk.serialize()
+	var decryptKeyStr string
 	if err == nil {
 		decryptKeyStr = hex.EncodeToString(decryptKey)
 	}
+	tfh.storeDecryptKeyString(decryptKeyStr, keyFilePath)
+	returnPath = keyFilePath
 	return
 }
 
@@ -87,8 +90,9 @@ func (tfh *TFH) retrieveDecryptKeyString(filePath string) (decryptKeyStr string)
 
 //return completed key to user
 
-func (tfh *TFH) decryptAndGet(key string) (outStr string, err error) {
+func (tfh *TFH) decryptAndGet(path string) (outStr string, err error) {
 	//deconstruct key into parts
+	key := tfh.retrieveDecryptKeyString(path)
 	keybytes, _ := hex.DecodeString(key)
 	tfhkey, _ := unSerialize(keybytes)
 
@@ -96,7 +100,7 @@ func (tfh *TFH) decryptAndGet(key string) (outStr string, err error) {
 	flattened_bytes := flatten(bytes)
 
 	decryptBytes := decrypt(flattened_bytes, tfhkey.EncryptKey)
-	decryptBytes = trimDecryptedFile(decryptBytes, tfhkey.NumPadBytes)
+	// decryptBytes = trimDecryptedFile(decryptBytes, tfhkey.NumPadBytes)
 	fmt.Println("DONE FINDING: ", string(decryptBytes))
 
 	//randomly call find on parts
