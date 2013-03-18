@@ -25,8 +25,6 @@ func (tfh *TFH) encryptAndStore(filePath, keyFilePath, key string) (returnPath s
 	var encryptedBytes []byte
 	encryptedBytes, tk.NumPadBytes = encrypt(fileContents, tk.EncryptKey)
 
-	fmt.Println("enc file:", encryptedBytes)
-
 	parts := splitBytes(encryptedBytes)
 	tk.PartKeys, err = tfh.storeAll(parts)
 	if err != nil {
@@ -123,13 +121,11 @@ func (tfh *TFH) decryptAndGet(pathToKey string, pathToFile string) (outStr strin
 	tfh.writeFile(pathToFile, decryptBytes)
 	outStr = pathToFile
 
-	fmt.Println("DONE FINDING: ", string(decryptBytes))
 	return
 }
 
 func encrypt(msg []byte, inputkey []byte) (encrypted_file []byte, numPadBytes int) {
 	numPadBytes = numBytesToPad(msg)
-	fmt.Println("pad:", numPadBytes)
 	msg = padFile(msg, numPadBytes)
 	// some key, 32 Byte long
 	key := []byte(inputkey)
@@ -242,39 +238,31 @@ func (tfh *TFH) storeAll(vals [][]byte) (keys [][]byte, err error) {
 
 // returns the keys in the not the same order they were
 func (tfh *TFH) findAll(keys [][]byte) (values [][]byte, err error) {
-	fmt.Println("FINDING SHIT")
 	values = make([][]byte, len(keys))
 	order := rand.Perm(len(keys))
 
 	for _, i := range order {
 		id, _ := kademlia.FromBytes(keys[i])
-		fmt.Println("FINDING:", id.AsString())
 		findValResult, errCheck := kademlia.IterativeFindValue(tfh.kadem, id)
 		if errCheck != nil {
 			err = errors.New(fmt.Sprintf("Iterative find value error: %v", err))
 			return
 		}
 		values[i] = findValResult.Value
-		fmt.Println("VALUE", values[i])
-
 	}
 
 	return
 }
 
 func flatten(byte_array [][]byte) (flattened_bytes []byte) {
-	fmt.Println("byte_array", byte_array)
 	flattened_bytes = make([]byte, 0)
-	fmt.Println("len", len(byte_array))
 	for i := 0; i < len(byte_array); i++ {
 		flattened_bytes = append(flattened_bytes, byte_array[i]...)
 	}
-	fmt.Println("flattened_bytes", flattened_bytes)
 	return
 }
 
 func trimDecryptedFile(file []byte, numToTrim int) (trimFile []byte) {
-	fmt.Println("trimming ", numToTrim)
 	trimFile = file[:len(file)-numToTrim]
 	return
 }
