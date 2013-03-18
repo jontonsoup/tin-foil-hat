@@ -100,7 +100,7 @@ func (tfh *TFH) decryptAndGet(path string) (outStr string, err error) {
 	flattened_bytes := flatten(bytes)
 
 	decryptBytes := decrypt(flattened_bytes, tfhkey.EncryptKey)
-	// decryptBytes = trimDecryptedFile(decryptBytes, tfhkey.NumPadBytes)
+	decryptBytes = trimDecryptedFile(decryptBytes, tfhkey.NumPadBytes)
 	fmt.Println("DONE FINDING: ", string(decryptBytes))
 
 	//randomly call find on parts
@@ -278,6 +278,6 @@ func flatten(byte_array [][]byte) (flattened_bytes []byte) {
 
 func trimDecryptedFile(file []byte, numToTrim int) (trimFile []byte) {
 	fmt.Println("trimming ", numToTrim)
-	trimFile = file[:-numToTrim]
+	trimFile = file[:len(file)-numToTrim]
 	return
 }
