@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"kademlia-secure/kademlia"
+	"math/rand"
 	"os"
 )
 
@@ -227,7 +228,7 @@ func splitBytes(b []byte) (split [][]byte) {
 // returns the keys in the same order they were
 func (tfh *TFH) storeAll(vals [][]byte) (keys [][]byte, err error) {
 	keys = make([][]byte, len(vals))
-	order := randomOrder(len(vals))
+	order := rand.Perm(len(vals))
 
 	for _, i := range order {
 		keys[i], err = kademlia.HashStore(tfh.kadem, vals[i])
@@ -239,20 +240,11 @@ func (tfh *TFH) storeAll(vals [][]byte) (keys [][]byte, err error) {
 	return
 }
 
-// TODO: make random
-func randomOrder(length int) (order []int) {
-	order = make([]int, length)
-	for i := 0; i < length; i++ {
-		order[i] = i
-	}
-	return
-}
-
 // returns the keys in the not the same order they were
 func (tfh *TFH) findAll(keys [][]byte) (values [][]byte, err error) {
 	fmt.Println("FINDING SHIT")
 	values = make([][]byte, len(keys))
-	order := randomOrder(len(keys))
+	order := rand.Perm(len(keys))
 
 	for _, i := range order {
 		id, _ := kademlia.FromBytes(keys[i])
