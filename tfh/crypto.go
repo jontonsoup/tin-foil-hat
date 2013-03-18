@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"kademlia-secure/kademlia"
-	"math/rand"
 	"os"
 )
 
@@ -59,7 +58,6 @@ func (tfh *TFH) storeDecryptKeyString(decryptKeyStr string, filePath string) {
 	}
 	return
 }
-
 
 // stores the file at the path
 func (tfh *TFH) writeFile(filepath string, data []byte) {
@@ -113,7 +111,10 @@ func (tfh *TFH) decryptAndGet(pathToKey string, pathToFile string) (outStr strin
 	keybytes, _ := hex.DecodeString(key)
 	tfhkey, _ := unSerialize(keybytes)
 
-	bytes, _ := tfh.findAll(tfhkey.PartKeys)
+	bytes, err := tfh.findAll(tfhkey.PartKeys)
+	if err != nil {
+		return
+	}
 	flattened_bytes := flatten(bytes)
 
 	decryptBytes := decrypt(flattened_bytes, tfhkey.EncryptKey)
@@ -238,10 +239,11 @@ func (tfh *TFH) storeAll(vals [][]byte) (keys [][]byte, err error) {
 	return
 }
 
+// TODO: make random
 func randomOrder(length int) (order []int) {
 	order = make([]int, length)
 	for i := 0; i < length; i++ {
-		order[i] = int(rand.Intn(length))
+		order[i] = i
 	}
 	return
 }

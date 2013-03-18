@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log"
 	"testing"
 )
 
@@ -102,5 +103,18 @@ func TestRandomOrder(t *testing.T) {
 	if len(r) != numInds {
 		t.Log("Expected", numInds, "indices, but got an array of length", r)
 		t.Fail()
+	}
+	testOrder := make([]bool, numInds)
+	for i, _ := range testOrder {
+		testOrder[i] = false
+	}
+	for _, i := range r {
+		log.Println(i)
+		testOrder[i] = true
+	}
+	for i, _ := range testOrder {
+		if !testOrder[i] {
+			t.Fail()
+		}
 	}
 }
