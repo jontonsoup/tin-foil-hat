@@ -28,7 +28,6 @@ func (tfh *TFH) runCommand(s string) (outStr string, err error) {
 		}
 		randomKey := makeRandKey(KEY_SIZE)
 		outStr, err = tfh.encryptAndStore(fields[1], fields[2], string(randomKey))
-
 		return
 
 	case "decrypt":

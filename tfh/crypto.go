@@ -15,7 +15,10 @@ import (
 const CHUNK_SIZE = 32
 
 func (tfh *TFH) encryptAndStore(filePath, keyFilePath, key string) (returnPath string, err error) {
-	fileContents := parseFile(filePath)
+	fileContents, err := parseFile(filePath)
+	if err != nil {
+		return
+	}
 	tk := new(tfhKey)
 	tk.EncryptKey = []byte(key)
 	tk.Hash, err = hashFile(fileContents)
@@ -74,7 +77,11 @@ func (tfh *TFH) writeFile(filepath string, data []byte) {
 	return
 }
 
-func (tfh *TFH) retrieveDecryptKeyString(filePath string) (decryptKeyStr string) {
+func (tfh *TFH) retrieveDecryptKeyString(filePath string) (decryptKeyStr string, err error) {
+	if _, err = os.Stat(filePath); os.IsNotExist(err) {
+		err = errors.New(fmt.Sprintf("no such file or directory: %s", filePath))
+		return
+	}
 	content, err := ioutil.ReadFile(filePath)
 	if err != nil {
 		panic(err)
@@ -83,30 +90,12 @@ func (tfh *TFH) retrieveDecryptKeyString(filePath string) (decryptKeyStr string)
 	return
 }
 
-//
-// [2 bytes = length of padding ][32 bytes SHA hash of unencrypted file whole file][... X number of SHA hashes for file chunks]
-//
-//
-
-// takes a file path and ecrypts that file, returning
-// a hash representing a way to
-
-//determine how much we need to pad unencrypted file to make it mod 256 bit (append to output key (for user))
-
-//encrypt file with SHA hash as key with AES and append to output key (for user)
-
-//split file into 256 bit chunks
-
-//compute SHA hash of chunk in order append to output key (for user)
-
-//randomly choose a chunk, send chunk out to store
-//do until all chunks are stored
-
-//return completed key to user
-
 func (tfh *TFH) decryptAndGet(pathToKey string, pathToFile string) (outStr string, err error) {
 	//deconstruct key into parts
-	key := tfh.retrieveDecryptKeyString(pathToKey)
+	key, err := tfh.retrieveDecryptKeyString(pathToKey)
+	if err != nil {
+		return
+	}
 	keybytes, _ := hex.DecodeString(key)
 	tfhkey, _ := unSerialize(keybytes)
 
@@ -197,7 +186,12 @@ func hashFile(fileContents []byte) (hash []byte, err error) {
 	return
 }
 
-func parseFile(filePath string) (fileContents []byte) {
+func parseFile(filePath string) (fileContents []byte, err error) {
+	if _, err = os.Stat(filePath); os.IsNotExist(err) {
+		err = errors.New(fmt.Sprintf("no such file or directory: %s", filePath))
+		return
+	}
+
 	// open the file
 	file, err := os.Open(filePath) // For read access.
 	if err != nil {
