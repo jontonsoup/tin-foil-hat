@@ -2,7 +2,6 @@ package kademlia
 
 import (
 	"crypto/sha256"
-	"errors"
 	"log"
 )
 
@@ -24,13 +23,13 @@ func Hash(bs []byte) []byte {
 	return h.Sum(nil)
 }
 
-func Verify(key ID, value []byte) error {
+func CorrectHash(key ID, value []byte) bool {
 	bs := key[:]
 	hash := Hash(bs)
 	for i, b := range hash {
 		if uint(b) != uint(hash[i]) {
-			return errors.New("verify failure")
+			return false
 		}
 	}
-	return nil
+	return true
 }

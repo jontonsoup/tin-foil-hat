@@ -29,7 +29,7 @@ func TestHash(t *testing.T) {
 	return
 }
 
-func TestVerify(t *testing.T) {
+func TestCorrectHash(t *testing.T) {
 	b1 := []byte("test")
 	hash := Hash(b1)
 	key, err := FromBytes(hash)
@@ -37,9 +37,8 @@ func TestVerify(t *testing.T) {
 		t.Log("FromBytes err")
 		t.Fail()
 	}
-	err = Verify(key, b1)
-	if err != nil {
-		t.Log(err)
+	if !CorrectHash(key, b1) {
+		t.Log("Bad hash")
 		t.Fail()
 	}
 }

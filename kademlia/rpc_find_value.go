@@ -43,6 +43,9 @@ func SendFindValue(k *Kademlia, key ID, nodeID ID) (ret *FindValueResult, err er
 	if !ret.MsgID.Equals(ret.MsgID) {
 		err = errors.New("FindValue MsgID didn't match SendFindValue MsgID")
 	}
+	if ret.Value != nil && CorrectHash(key, ret.Value) {
+		err = errors.New("Bad hash")
+	}
 	return
 }
 
