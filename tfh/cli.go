@@ -22,15 +22,12 @@ func (tfh *TFH) runCommand(s string) (outStr string, err error) {
 	switch fields[0] {
 
 	case "encrypt":
-		if len(fields) != 4 {
-			err = errors.New("usage: Path to file | path to keyfile | 32 character key")
+		if len(fields) != 3 {
+			err = errors.New("usage: Path to file | path to keyfile")
 			return
 		}
-		if len(fields[3]) != 32 {
-			err = errors.New("ERROR: you must have a 32 character key")
-			return
-		}
-		outStr, err = tfh.encryptAndStore(fields[1], fields[2], fields[3])
+		randomKey := makeRandKey(KEY_SIZE)
+		outStr, err = tfh.encryptAndStore(fields[1], fields[2], string(randomKey))
 
 		return
 
