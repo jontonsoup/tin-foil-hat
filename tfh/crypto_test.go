@@ -6,7 +6,11 @@ import (
 
 func TestEncrypt(t *testing.T) {
 	key := []byte("xDG8KiW148cwUQIPS23pHxPSVppD8VIH")
-	fileContents := parseFile("crypto_test.go")
+	fileContents, err := parseFile("crypto_test.go")
+	if err != nil {
+		t.Log(err)
+		t.Fail()
+	}
 	encrypted, _ := encrypt(fileContents, key)
 	decrypted := decrypt(encrypted, key)
 	for i, b := range fileContents {
@@ -27,7 +31,11 @@ func TestEncrypt(t *testing.T) {
 
 func TestSplitBytes(t *testing.T) {
 	key := []byte("zDglWUd5gbjArrcjxbg8t4Wfspszpxyp")
-	fileContents := parseFile("crypto_test.go")
+	fileContents, err := parseFile("crypto_test.go")
+	if err != nil {
+		t.Log(err)
+		t.Fail()
+	}
 	encrypted, _ := encrypt(fileContents, key)
 	split := splitBytes(encrypted)
 
