@@ -37,7 +37,7 @@ func TestCorrectHash(t *testing.T) {
 		t.Log("FromBytes err")
 		t.Fail()
 	}
-	if !CorrectHash(key, b1) {
+	if !CorrectHash(key[:], b1) {
 		t.Log("Bad hash")
 		t.Fail()
 	}

@@ -24,7 +24,7 @@ func (k *Kademlia) Store(req StoreRequest, res *StoreResult) error {
 	k.updateContact(req.Sender)
 	res.MsgID = req.MsgID
 
-	if !CorrectHash(req.Key, req.Value) {
+	if !CorrectHash(req.Key[:], req.Value) {
 		return errors.New("Bad hash")
 	}
 	k.Table[req.Key] = req.Value

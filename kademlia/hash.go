@@ -23,10 +23,9 @@ func Hash(bs []byte) []byte {
 	return h.Sum(nil)
 }
 
-func CorrectHash(key ID, value []byte) bool {
-	bs := key[:]
-	hash := Hash(bs)
-	for i, b := range hash {
+func CorrectHash(testHash []byte, value []byte) bool {
+	hash := Hash(value)
+	for i, b := range testHash {
 		if uint(b) != uint(hash[i]) {
 			return false
 		}

@@ -118,6 +118,14 @@ func (tfh *TFH) decryptAndGet(pathToKey string, pathToFile string) (outStr strin
 
 	decryptBytes := decrypt(flattened_bytes, tfhkey.EncryptKey)
 	decryptBytes = trimDecryptedFile(decryptBytes, tfhkey.NumPadBytes)
+	hash, err := hashFile(decryptBytes)
+	if err != nil {
+		return
+	}
+	if !kademlia.CorrectHash(hash, decryptBytes) {
+		err = errors.New("Reassembled file has bad hash. Aborting!!!")
+		return
+	}
 	tfh.writeFile(pathToFile, decryptBytes)
 	outStr = pathToFile
 
