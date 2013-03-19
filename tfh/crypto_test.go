@@ -1,7 +1,6 @@
 package main
 
 import (
-	"log"
 	"testing"
 )
 
@@ -91,29 +90,6 @@ func TestPadFile(t *testing.T) {
 	// padded file should have the original file's content
 	for i := 0; i < len(x); i++ {
 		if y[i] != x[i] {
-			t.Fail()
-		}
-	}
-}
-
-func TestRandomOrder(t *testing.T) {
-	// make sure the right number of indices are returned
-	numInds := 5
-	r := randomOrder(numInds)
-	if len(r) != numInds {
-		t.Log("Expected", numInds, "indices, but got an array of length", r)
-		t.Fail()
-	}
-	testOrder := make([]bool, numInds)
-	for i, _ := range testOrder {
-		testOrder[i] = false
-	}
-	for _, i := range r {
-		log.Println(i)
-		testOrder[i] = true
-	}
-	for i, _ := range testOrder {
-		if !testOrder[i] {
 			t.Fail()
 		}
 	}
