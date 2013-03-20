@@ -25,7 +25,7 @@ type Kademlia struct {
 }
 
 func NewKademlia(address string, firstPeerAddr string) (k *Kademlia, err error) {
-	k, err = NewUnBootedKademlia(address, firstPeerAddr)
+	k, err = NewUnBootedKademlia(address)
 	if err != nil {
 		return
 	}
@@ -34,7 +34,7 @@ func NewKademlia(address string, firstPeerAddr string) (k *Kademlia, err error) 
 	return
 }
 
-func NewUnBootedKademlia(listenAddr, peerAddr string) (k *Kademlia, err error) {
+func NewUnBootedKademlia(listenAddr string) (k *Kademlia, err error) {
 	ip, port, err := parseAddress(listenAddr)
 	if err != nil {
 		return
