@@ -4,7 +4,7 @@ TFH is a system that builds on top of a modified version of the Kademlia distrib
 
 
 ## Building and Running
-- `go install kademlia-secure/tfh` to install the binary.
+- `go install tin-foil-hat/tfh` to install the binary.
 - Then, you can run it via `./tfh 127.0.0.1:8090 127.0.0.1:8090`
 
 ## Encrypting a file
