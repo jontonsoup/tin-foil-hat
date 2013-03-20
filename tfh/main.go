@@ -23,7 +23,7 @@ import (
 )
 
 import (
-	"kademlia-secure/kademlia"
+	"tin-foil-hat/kademlia"
 )
 
 func main() {

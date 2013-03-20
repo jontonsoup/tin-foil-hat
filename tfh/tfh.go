@@ -7,7 +7,7 @@ import (
 )
 
 import (
-	"kademlia-secure/kademlia"
+	"tin-foil-hat/kademlia"
 )
 
 const KEY_SIZE = 32

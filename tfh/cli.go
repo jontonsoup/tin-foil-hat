@@ -10,7 +10,7 @@ import (
 )
 
 import (
-	"kademlia-secure/kademlia"
+	"tin-foil-hat/kademlia"
 )
 
 func (tfh *TFH) runCommand(s string) (outStr string, err error) {
