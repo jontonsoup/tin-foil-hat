@@ -5,7 +5,7 @@ import (
 	"encoding/gob"
 )
 
-const FAKE_BYTE_RATIO = float64(0.1)
+const MAX_FAKE_BYTE_RATIO = float64(0.1)
 
 type tfhKey struct {
 	Hash         []byte

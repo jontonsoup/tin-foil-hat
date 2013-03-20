@@ -7,10 +7,10 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
-	"tin-foil-hat/kademlia"
 	"math"
 	"math/rand"
 	"os"
+	"tin-foil-hat/kademlia"
 )
 
 const CHUNK_SIZE = 32
@@ -32,7 +32,9 @@ func (tfh *TFH) encryptAndStore(filePath, keyFilePath, key string) (returnPath s
 
 	parts := splitBytes(encryptedBytes)
 	tk.NumRealBytes = len(parts)
-	numFakeBytes := int(math.Ceil(float64(tk.NumRealBytes) * FAKE_BYTE_RATIO))
+
+	ratio := randomRatio(MAX_FAKE_BYTE_RATIO)
+	numFakeBytes := int(math.Ceil(float64(tk.NumRealBytes) * ratio))
 	parts = addJunk(parts, numFakeBytes)
 	tk.PartKeys, err = tfh.storeAll(parts)
 	if err != nil {
@@ -277,7 +279,6 @@ func trimDecryptedFile(file []byte, numToTrim int) (trimFile []byte) {
 	return
 }
 
-
 func addJunk(bs ([][]byte), numBytes int) (newBs [][]byte) {
 	newBs = bs[:]
 	for i := 0; i < numBytes; i++ {
@@ -285,4 +286,8 @@ func addJunk(bs ([][]byte), numBytes int) (newBs [][]byte) {
 		newBs = append(newBs, junk)
 	}
 	return
+}
+
+func randomRatio(maxRat float64) float64 {
+	return rand.Float64() * maxRat
 }
