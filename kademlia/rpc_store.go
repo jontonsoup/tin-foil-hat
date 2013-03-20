@@ -2,7 +2,6 @@ package kademlia
 
 import (
 	"errors"
-	"log"
 	"net/rpc"
 )
 
@@ -20,7 +19,6 @@ type StoreResult struct {
 }
 
 func (k *Kademlia) Store(req StoreRequest, res *StoreResult) error {
-	log.Println("Handling store request from", req.Sender.Address())
 	k.updateContact(req.Sender)
 	res.MsgID = req.MsgID
 
@@ -40,7 +38,6 @@ func SendStore(k *Kademlia, key ID, value []byte, nodeID ID) error {
 	address := c.Address()
 
 	client, err := rpc.DialHTTP("tcp", address)
-	log.Println("Sending Store rpc to", address)
 	if err != nil {
 		k.removeContact(c.NodeID)
 		return nil
@@ -77,7 +74,6 @@ func IterativeStore(k *Kademlia, key ID, value []byte) (lastID ID, err error) {
 		SendStore(k, key, value, node.NodeID)
 	}
 
-	//	log.Println("Found", len(nodes), nodes)
 	lastID = nodes[len(nodes)-1].NodeID
 
 	return

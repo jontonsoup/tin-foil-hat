@@ -3,7 +3,6 @@ package kademlia
 import (
 	"container/list"
 	"errors"
-	"log"
 	"net/rpc"
 )
 
@@ -63,7 +62,6 @@ func (k *Kademlia) FindValue(req FindValueRequest, res *FindValueResult) error {
 		res.Err = nil
 		res.Nodes = nil
 	} else {
-		log.Println("No value for key:", req.Key.AsString())
 		// return closest nodes
 		res.MsgID = req.MsgID
 		res.Value = nil

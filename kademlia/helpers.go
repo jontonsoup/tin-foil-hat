@@ -77,8 +77,6 @@ func insertUnseenSorted(inputList *list.List, items [](Contact), compare func(Co
 
 // assumes the id is only in the list once
 func removeFromSorted(l *list.List, id ID) {
-
-	log.Println("Removinng", id.AsString(), "from shortList")
 	for e := l.Front(); e != nil; e = e.Next() {
 		c := e.Value.(Contact)
 		if c.NodeID.Equals(id) {

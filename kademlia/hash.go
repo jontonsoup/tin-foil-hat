@@ -2,7 +2,6 @@ package kademlia
 
 import (
 	"crypto/sha256"
-	"log"
 )
 
 func HashStore(k *Kademlia, value []byte) (hash []byte, err error) {
@@ -11,7 +10,6 @@ func HashStore(k *Kademlia, value []byte) (hash []byte, err error) {
 	if err != nil {
 		return
 	}
-	log.Println(key.AsString())
 	_, err = IterativeStore(k, key, value)
 	return
 }
