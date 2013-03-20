@@ -3,16 +3,15 @@ package kademlia
 import (
 	"fmt"
 	"log"
-	"math/rand"
-	"net"
-	"net/http"
-	"net/rpc"
 	"testing"
-	"time"
 )
 
 func ExampleIndex() {
-	k := NewKademlia("127.0.0.1:8890")
+	k, err := NewUnBootedKademlia("127.0.0.1:8890", "127.0.0.1:8890")
+	if err != nil {
+		log.Fatal(err)
+		return
+	}
 	k.NodeID = HalfHalfID()
 	other := OnesID()
 	index := k.index(other)
@@ -115,7 +114,11 @@ func TestOnesIndices(t *testing.T) {
 }
 
 func TestDoInSearchOrder(t *testing.T) {
-	k := NewKademlia("127.0.0.1:8890")
+	k, err := NewUnBootedKademlia("127.0.0.1:8890", "127.0.0.1:8890")
+	if err != nil {
+		t.Log(err)
+		t.Fail()
+	}
 	k.NodeID = HalfHalfID()
 
 	other := OnesID()
@@ -134,6 +137,7 @@ func TestDoInSearchOrder(t *testing.T) {
 
 }
 
+/*
 func bootupKademlia(listenStr string, firstPeerStr string) *Kademlia {
 	// By default, Go seeds its RNG with 1. This would cause every program to
 	// generate the same sequence of IDs.
@@ -179,7 +183,7 @@ func bootupKademlia(listenStr string, firstPeerStr string) *Kademlia {
 	}
 	return kadem
 }
-
+*/
 // func TestDoStore(t *testing.T) {
 // 	bootupKademlia("127.0.0.1:8765", "127.0.0.1:8765")
 // 	// val := []byte("foobar")

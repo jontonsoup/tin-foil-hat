@@ -3,7 +3,11 @@ package kademlia
 import (
 	"container/list"
 	"log"
+	"math/rand"
 	"net"
+	"net/http"
+	"net/rpc"
+	"time"
 )
 
 // Contains the core kademlia type. In addition to core state, this type serves
@@ -20,21 +24,24 @@ type Kademlia struct {
 	Table   map[ID][]byte // TODO: republishes
 }
 
-func NewKademlia(address string) *Kademlia {
-	ip, port, err := parseAddress(address)
+func NewKademlia(address string, firstPeerAddr string) (k *Kademlia, err error) {
+	k, err = NewUnBootedKademlia(address, firstPeerAddr)
 	if err != nil {
-		log.Fatal("bad address")
+		return
 	}
-	return newKademliaSplitAddress(ip, port)
+	err = k.bootUp(address, firstPeerAddr)
+
+	return
 }
 
-func LocalLookup(k *Kademlia, key ID) ([]byte, bool) {
-	val, ok := k.Table[key]
-	return val, ok
-}
+func NewUnBootedKademlia(listenAddr, peerAddr string) (k *Kademlia, err error) {
+	ip, port, err := parseAddress(listenAddr)
+	if err != nil {
+		return
+	}
+	rand.Seed(time.Now().UnixNano())
 
-func newKademliaSplitAddress(ip net.IP, port uint16) *Kademlia {
-	k := new(Kademlia)
+	k = new(Kademlia)
 	k.NodeID = NewRandomID()
 	k.Self = Contact{k.NodeID, ip, port}
 	for i, _ := range k.Buckets {
@@ -45,7 +52,38 @@ func newKademliaSplitAddress(ip net.IP, port uint16) *Kademlia {
 	}
 	k.updateContact(k.Self)
 	k.Table = make(map[ID][]byte)
-	return k
+	return
+}
+
+func LocalLookup(k *Kademlia, key ID) ([]byte, bool) {
+	val, ok := k.Table[key]
+	return val, ok
+}
+
+func (k *Kademlia) bootUp(listenAddr string, peerAddr string) (err error) {
+	rpc.Register(k)
+	rpc.HandleHTTP()
+
+	l, err := net.Listen("tcp", listenAddr)
+	if err != nil {
+		log.Fatal("Listen: ", err)
+		return
+	}
+
+	// Serve forever.
+	go http.Serve(l, nil)
+
+	_, err = SendPing(k, peerAddr)
+	if err != nil {
+		log.Fatal("Initial ping error: ", err)
+		return
+	}
+
+	_, err = IterativeFindNode(k, k.NodeID)
+	if err != nil {
+		log.Fatal("Bootstrap find_node error: ", err)
+	}
+	return
 }
 
 func (k *Kademlia) removeContact(id ID) {

@@ -14,12 +14,7 @@ import (
 	"flag"
 	"fmt"
 	"log"
-	"math/rand"
-	"net"
-	"net/http"
-	"net/rpc"
 	"os"
-	"time"
 )
 
 import (
@@ -29,7 +24,7 @@ import (
 func main() {
 	// By default, Go seeds its RNG with 1. This would cause every program to
 	// generate the same sequence of IDs.
-	rand.Seed(time.Now().UnixNano())
+	//	rand.Seed(time.Now().UnixNano())
 
 	// Get the bind and connect connection strings from command-line arguments.
 	flag.Parse()
@@ -41,45 +36,51 @@ func main() {
 	firstPeerStr := args[1]
 
 	fmt.Printf("kademlia starting up!\n")
-	kadem := kademlia.NewKademlia(listenStr)
+	kadem, err := kademlia.NewKademlia(listenStr, firstPeerStr)
+	if err != nil {
+		log.Fatal(err)
+		return
+	}
 	tfh := NewTFH(kadem)
-	rpc.Register(kadem)
-	rpc.HandleHTTP()
-	l, err := net.Listen("tcp", listenStr)
-	if err != nil {
-		log.Fatal("Listen: ", err)
-	}
 
-	// Serve forever.
-	go http.Serve(l, nil)
+	/*
+		rpc.Register(kadem)
+		rpc.HandleHTTP()
+		l, err := net.Listen("tcp", listenStr)
+		if err != nil {
+			log.Fatal("Listen: ", err)
+		}
 
-	// Confirm our server is up with a PING request and then exit.
-	// Your code should loop forever, reading instructions from stdin and
-	// printing their results to stdout. See README.txt for more details.
-	pong, err := kademlia.SendPing(kadem, firstPeerStr)
-	if err != nil {
-		log.Fatal("Initial ping error: ", err)
-	}
+		// Serve forever.
+		go http.Serve(l, nil)
 
-	fmt.Printf("pong msgID: %s\n", pong.MsgID.AsString())
+		// Confirm our server is up with a PING request and then exit.
+		// Your code should loop forever, reading instructions from stdin and
+		// printing their results to stdout. See README.txt for more details.
+		pong, err := kademlia.SendPing(kadem, firstPeerStr)
+		if err != nil {
+			log.Fatal("Initial ping error: ", err)
+		}
 
-	// THis was the workaround, Ted.
-	//	_, err = kademlia.SendFindNodeAddr(kadem, kadem.NodeID, firstPeerStr)
+		fmt.Printf("pong msgID: %s\n", pong.MsgID.AsString())
 
-	//	var foundNodes []kademlia.Contact
-	//	if err == nil {
-	foundNodes, err := kademlia.IterativeFindNode(kadem, kadem.NodeID)
-	//	}
+		// THis was the workaround, Ted.
+		//	_, err = kademlia.SendFindNodeAddr(kadem, kadem.NodeID, firstPeerStr)
 
-	if err != nil {
-		log.Fatal("Bootstrap find_node error: ", err)
-	}
+		//	var foundNodes []kademlia.Contact
+		//	if err == nil {
+		foundNodes, err := kademlia.IterativeFindNode(kadem, kadem.NodeID)
+		//	}
 
-	fmt.Println("Received", len(foundNodes), "nodes")
-	for i, node := range foundNodes {
-		fmt.Println("Node ", i, ": ", node.NodeID.AsString())
-	}
+		if err != nil {
+			log.Fatal("Bootstrap find_node error: ", err)
+		}
 
+		fmt.Println("Received", len(foundNodes), "nodes")
+		for i, node := range foundNodes {
+			fmt.Println("Node ", i, ": ", node.NodeID.AsString())
+		}
+	*/
 	r := bufio.NewReader(os.Stdin)
 	for {
 		line, err := r.ReadString('\n')
