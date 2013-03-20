@@ -25,7 +25,7 @@ TFH is a file storage system that builds on top of a modified version of the Kad
 - Random transmission of file segments so people sniffing the wire cannot reconstruct the file
 - This is because both the file segments overlap (meaning there are many segments of a file that repeat)
 - And the the order of the file segments used to reconstruct the file is known only to the sender of the file
-- Our system will interleave 10% “Junk Chunks” to confuse anyone who might be trying to reconstruct the file. Only the transmitter of the file knows which segments are real and which ones are junk
+- Our system will interleave a random amount up to 10% “Junk Chunks” to confuse anyone who might be trying to reconstruct the file. Only the transmitter of the file knows which segments are real and which ones are junk
 
 ##Algorithm:
 ### Encryption
