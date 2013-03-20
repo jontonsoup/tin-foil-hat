@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"kademlia-secure/kademlia"
+	"math"
 	"math/rand"
 	"os"
 )
@@ -29,6 +30,9 @@ func (tfh *TFH) encryptAndStore(filePath, keyFilePath, key string) (returnPath s
 	encryptedBytes, tk.NumPadBytes = encrypt(fileContents, tk.EncryptKey)
 
 	parts := splitBytes(encryptedBytes)
+	tk.NumRealBytes = len(parts)
+	numFakeBytes := int(math.Ceil(float64(tk.NumRealBytes) * FAKE_BYTE_RATIO))
+	parts = addJunk(parts, numFakeBytes)
 	tk.PartKeys, err = tfh.storeAll(parts)
 	if err != nil {
 		return
@@ -99,10 +103,11 @@ func (tfh *TFH) decryptAndGet(pathToKey string, pathToFile string) (outStr strin
 	keybytes, _ := hex.DecodeString(key)
 	tfhkey, _ := unSerialize(keybytes)
 
-	bytes, err := tfh.findAll(tfhkey.PartKeys)
+	allBytes, err := tfh.findAll(tfhkey.PartKeys)
 	if err != nil {
 		return
 	}
+	bytes := allBytes[:tfhkey.NumRealBytes]
 	flattened_bytes := flatten(bytes)
 
 	decryptBytes := decrypt(flattened_bytes, tfhkey.EncryptKey)

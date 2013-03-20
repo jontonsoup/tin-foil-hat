@@ -5,11 +5,14 @@ import (
 	"encoding/gob"
 )
 
+const FAKE_BYTE_RATIO = float64(0.5)
+
 type tfhKey struct {
-	Hash        []byte
-	EncryptKey  []byte
-	NumPadBytes int
-	PartKeys    [][]byte
+	Hash         []byte
+	EncryptKey   []byte
+	NumPadBytes  int
+	PartKeys     [][]byte
+	NumRealBytes int
 }
 
 func (tfhK tfhKey) serialize() (out []byte, err error) {
