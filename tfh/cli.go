@@ -1,17 +1,36 @@
 package main
 
 import (
+	"bufio"
 	"encoding/hex"
 	"errors"
 	"fmt"
 	"log"
+	"os"
 	"strconv"
 	"strings"
 )
 
 import (
-	"kademlia-secure/kademlia"
+	"tin-foil-hat/kademlia"
 )
+
+func (tfh *TFH) cli() {
+	r := bufio.NewReader(os.Stdin)
+	for {
+		line, err := r.ReadString('\n')
+		if err != nil {
+			fmt.Println(err)
+		}
+		str, err := tfh.runCommand(line)
+		if err == nil {
+			fmt.Println(str)
+		} else {
+			fmt.Println(err)
+		}
+	}
+
+}
 
 func (tfh *TFH) runCommand(s string) (outStr string, err error) {
 	fields := strings.Fields(s)

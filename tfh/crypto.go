@@ -7,7 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
-	"kademlia-secure/kademlia"
+	"tin-foil-hat/kademlia"
 	"math"
 	"math/rand"
 	"os"
