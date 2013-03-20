@@ -10,11 +10,9 @@
 package main
 
 import (
-	"bufio"
 	"flag"
 	"fmt"
 	"log"
-	"os"
 )
 
 import (
@@ -22,10 +20,6 @@ import (
 )
 
 func main() {
-	// By default, Go seeds its RNG with 1. This would cause every program to
-	// generate the same sequence of IDs.
-	//	rand.Seed(time.Now().UnixNano())
-
 	// Get the bind and connect connection strings from command-line arguments.
 	flag.Parse()
 	args := flag.Args()
@@ -42,18 +36,5 @@ func main() {
 		return
 	}
 	tfh := NewTFH(kadem)
-
-	r := bufio.NewReader(os.Stdin)
-	for {
-		line, err := r.ReadString('\n')
-		if err != nil {
-			fmt.Println(err)
-		}
-		str, err := tfh.runCommand(line)
-		if err == nil {
-			fmt.Println(str)
-		} else {
-			fmt.Println(err)
-		}
-	}
+	tfh.cli()
 }
