@@ -2,7 +2,6 @@ package kademlia
 
 import (
 	"errors"
-	"log"
 	"net/rpc"
 )
 
@@ -44,7 +43,6 @@ func SendPing(k *Kademlia, address string) (pong *Pong, err error) {
 func (k *Kademlia) Ping(ping Ping, pong *Pong) error {
 	// This one's a freebie.
 	if !ping.Sender.NodeID.Equals(k.NodeID) {
-		log.Print("Adding contact: ", ping.Sender.NodeID.AsString())
 		k.updateContact(ping.Sender)
 	}
 	pong.MsgID = ping.MsgID

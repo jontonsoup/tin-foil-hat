@@ -45,7 +45,6 @@ func (b *Bucket) waitRefresh() {
 		case <-timeOut:
 			// refresh bucket
 			if b.contacts.Len() != 0 {
-				log.Println("Bucket", b.index, "timed out, refreshing contacts")
 				b.refresh()
 			}
 		}
@@ -55,7 +54,6 @@ func (b *Bucket) waitRefresh() {
 func (b *Bucket) refresh() {
 	// selects a random number in the bucket's range and do an
 	// iterativeFindNode using that number as key
-	log.Println("Refreshing bucket", b.index)
 
 	c := b.contacts.Front().Value.(Contact)
 	idInBucket := c.NodeID
@@ -81,7 +79,6 @@ func (b *Bucket) updateContact(c Contact) {
 	b.refreshChan <- true
 	if !ok {
 		if b.contacts.Len() <= MAX_BUCKET_SIZE {
-			log.Print("Adding contact to bucket: ", c.NodeID.AsString())
 			b.contacts.PushBack(c)
 		} else {
 			// ping the least recently seen node
@@ -89,11 +86,9 @@ func (b *Bucket) updateContact(c Contact) {
 			first := firstEl.Value.(Contact)
 			_, err := SendPing(b.k, first.Address())
 			if err != nil {
-				log.Println("Old node responded, ignoring new contact")
 				// first is now most recently seen
 				b.contacts.MoveToBack(firstEl)
 			} else {
-				log.Println("Old node did not respond, evicting and adding new contact")
 				b.contacts.Remove(firstEl)
 				b.contacts.PushBack(c)
 			}

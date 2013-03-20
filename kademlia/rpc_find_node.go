@@ -3,7 +3,6 @@ package kademlia
 import (
 	"container/list"
 	"errors"
-	"log"
 	"net/rpc"
 	"time"
 )
@@ -59,9 +58,6 @@ func SendFindNodeAddr(k *Kademlia, nodeID ID, address string) (foundNodes []Foun
 }
 
 func sendFindNodeAddr(k *Kademlia, nodeID ID, address string) ([]FoundNode, error) {
-	// TODO
-	// send a findNode rpc and return the k-closest nodes
-	log.Println("Sending FindNode rpc to ", address)
 	client, err := rpc.DialHTTP("tcp", address)
 	if err != nil {
 		return nil, err
@@ -91,7 +87,6 @@ func sendFindNodeAddr(k *Kademlia, nodeID ID, address string) ([]FoundNode, erro
 }
 
 func (k *Kademlia) FindNode(req FindNodeRequest, res *FindNodeResult) error {
-	log.Println("Handling FindNode request from", req.Sender.Address())
 	// Find the k closest nodes to FindNodeRequest.NodeID and pack
 	// them in FindNodeResult.Nodes
 	k.updateContact(req.Sender)
@@ -165,13 +160,6 @@ func IterativeFindNode(k *Kademlia, searchID ID) ([]Contact, error) {
 			// make sure they're there
 			allUnseen := getUnseen(shortList, alreadySeen, shortList.Len())
 
-			if len(allUnseen) != 0 {
-				log.Println("Didn't get closer, removing already seens")
-			}
-			for _, c := range allUnseen {
-				log.Println(c.NodeID.AsString())
-			}
-
 			unseenNodes := k.goFindNodes(allUnseen, searchID)
 
 			// send find_node rpcs to nextSearchNodes, add their nodes to shortList
@@ -205,7 +193,6 @@ func (k *Kademlia) goFindNodes(searchNodes []Contact, searchID ID) <-chan Signed
 
 	for _, curNode := range searchNodes {
 		node := curNode
-		log.Println("Going sendFindNode to", node.NodeID.AsString())
 		go func() {
 			foundNodes, err := SendFindNode(k, searchID, node.NodeID)
 			output := SignedFoundNodes{foundNodes, err, node}
