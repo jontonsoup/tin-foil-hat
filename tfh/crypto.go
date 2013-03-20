@@ -15,6 +15,7 @@ import (
 
 const CHUNK_SIZE = 32
 
+//this is the main function that encrypts the file and stores it across kademlia
 func (tfh *TFH) encryptAndStore(filePath, keyFilePath, key string) (returnPath string, err error) {
 	fileContents, err := parseFile(filePath)
 	if err != nil {
@@ -94,6 +95,7 @@ func (tfh *TFH) retrieveDecryptKeyString(filePath string) (decryptKeyStr string,
 	return
 }
 
+//this is the main function (run by the cli) that both gets the file and decrypts it
 func (tfh *TFH) decryptAndGet(pathToKey string, pathToFile string) (outStr string, err error) {
 	//deconstruct key into parts
 	key, err := tfh.retrieveDecryptKeyString(pathToKey)
@@ -193,7 +195,7 @@ func hashFile(fileContents []byte) (hash []byte, err error) {
 
 func parseFile(filePath string) (fileContents []byte, err error) {
 	if _, err = os.Stat(filePath); os.IsNotExist(err) {
-		err = errors.New(fmt.Sprintf("no such file or directory: %s", filePath))
+		err = errors.New(fmt.Sprintf("No such file or directory: %s", filePath))
 		return
 	}
 
@@ -261,6 +263,7 @@ func (tfh *TFH) findAll(keys [][]byte) (values [][]byte, err error) {
 	return
 }
 
+//flattens a [][]byte array into []byte
 func flatten(byte_array [][]byte) (flattened_bytes []byte) {
 	flattened_bytes = make([]byte, 0)
 	for i := 0; i < len(byte_array); i++ {
@@ -273,6 +276,7 @@ func trimDecryptedFile(file []byte, numToTrim int) (trimFile []byte) {
 	trimFile = file[:len(file)-numToTrim]
 	return
 }
+
 
 func addJunk(bs ([][]byte), numBytes int) (newBs [][]byte) {
 	newBs = bs[:]
