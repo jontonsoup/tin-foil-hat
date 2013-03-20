@@ -14,7 +14,7 @@ TFH is a system that builds on top of a modified version of the Kademlia distrib
 `decrypt /path/to/keyfile /path/to/file/you/want/to/decrypt`
 
 
-## Advantages of our system:
+## Advantages of the TFH system:
 
 - AES 256 Encryption of the file
 - 32 byte segments
@@ -49,6 +49,6 @@ Break file into 32 byte chunks
 - Trim the padding off the original file
 - Check the original file against the hash that was created during the encryption phase
 
-### Future Work
+### TODO
 - TLS
 - Node Repuatation system (so that it can be used with untrusted peers)
