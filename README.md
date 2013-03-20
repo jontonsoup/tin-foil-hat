@@ -1,7 +1,8 @@
 # Tin Foil Hat
 
-TFH is a system that builds on top of a modified version of the Kademlia distributed hash table. It takes a file as an input, and encrypts that file. To decrypt, the user inputs the file path of the key and the filepath of the place to store the unencrypted file. TFH gives you the ability to securely store your files on a network that is distributed, fault tolerant, and offers better safety than standard AES encryption.
+TFH is a file storage system that builds on top of a modified version of the Kademlia distributed hash table. It takes a file as an input, and encrypts that file. To decrypt, the user inputs the file path of the key and the filepath of the place to store the unencrypted file. TFH gives you the ability to securely store your files on a network that is distributed, fault tolerant, and offers better safety* than standard AES encryption.
 
+* We think... read on!
 
 ## Building and Running
 - `go install tin-foil-hat/tfh` to install the binary.
@@ -50,5 +51,8 @@ Break file into 32 byte chunks
 - Check the original file against the hash that was created during the encryption phase
 
 ### TODO
+
+We *think* this system is pretty nifty, but want to talk to people who are experts in go and in crypto to let us know what they think! If there is enough interest in the concept, we'd love to make the system robust, and production ready.
+
 - TLS
-- Node Repuatation system (so that it can be used with untrusted peers)
+- Node Reputation system (so that it can be used with untrusted peers)
