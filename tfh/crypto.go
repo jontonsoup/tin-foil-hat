@@ -268,3 +268,12 @@ func trimDecryptedFile(file []byte, numToTrim int) (trimFile []byte) {
 	trimFile = file[:len(file)-numToTrim]
 	return
 }
+
+func addJunk(bs ([][]byte), numBytes int) (newBs [][]byte) {
+	newBs = bs[:]
+	for i := 0; i < numBytes; i++ {
+		junk := makeRandKey(numBytes)
+		newBs = append(newBs, junk)
+	}
+	return
+}

@@ -102,3 +102,22 @@ func TestPadFile(t *testing.T) {
 		}
 	}
 }
+
+func TestaddJunk(t *testing.T) {
+	bs := make([][]byte, 2)
+	bs[0] = []byte{1, 2}
+	bs[1] = []byte{3}
+	newBs := addJunk(bs, 2)
+	if len(newBs) != 4 {
+		t.Fail()
+		return
+	}
+	for i, b := range bs {
+		for j, b2 := range b {
+			if uint(b2) != uint(newBs[i][j]) {
+				t.Fail()
+				return
+			}
+		}
+	}
+}
