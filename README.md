@@ -9,7 +9,8 @@ TFH makes it completely intractable to brute force decrypt the original file. As
 
 ## Building and Running
 - `go install tin-foil-hat/tfh` to install the binary.
-- Then, you can run it via `./tfh 127.0.0.1:8090 127.0.0.1:8090`
+- Then, you can run it via `./tfh ip_and_port_to_bind_to ip_and_port_of_existing_node_to_connect_to`
+- This will boot up one node. `./tfh 127.0.0.1:8090 127.0.0.1:8090` is an example for the first node.
 
 ## Encrypting a file
 `encrypt /path/to/file/you/want/to/store /path/to/keyfile/you/want/to/generate`
