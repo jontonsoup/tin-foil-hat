@@ -53,7 +53,7 @@ Break file into 32 byte chunks
 - Trim the padding off the original file
 - Check the original file against the hash that was created during the encryption phase
 
-### TODO
+## TODO
 
 We *think* this system is pretty nifty, but want to talk to people who are experts in Go and in Crypto to let us know what they think! If there is enough interest in the concept, we'd love to make the system robust, and production ready.
 
