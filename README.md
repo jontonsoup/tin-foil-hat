@@ -1,6 +1,6 @@
 # Tin Foil Hat
 
-TFH is a file storage system that builds on top of a modified version of the Kademlia distributed hash table. It takes a file as an input, and encrypts that file. To decrypt, the user inputs the file path of the key and the filepath of the place to store the unencrypted file. TFH gives you the ability to securely store your files on a network that is distributed, fault tolerant, and offers better safety* than standard AES encryption.
+TFH is a file storage system that builds on top of a modified version of the Kademlia distributed hash table (http://xlattice.sourceforge.net/components/protocol/kademlia/specs.html). It takes a file as an input, and encrypts that file. To decrypt, the user inputs the file path of the key and the filepath of the place to store the unencrypted file. TFH gives you the ability to securely store your files on a network that is distributed, fault tolerant, and offers better safety* than standard AES encryption.
 
 
 ## Way way way safer than plain AES
