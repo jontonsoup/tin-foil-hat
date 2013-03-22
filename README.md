@@ -2,10 +2,11 @@
 
 TFH is a file storage system that builds on top of a modified version of the Kademlia distributed hash table (http://xlattice.sourceforge.net/components/protocol/kademlia/specs.html). It takes a file as an input, and encrypts that file. To decrypt, the user inputs the file path of the key and the filepath of the place to store the unencrypted file. TFH gives you the ability to securely store your files on a network that is distributed, fault tolerant, and offers better safety* than standard AES encryption.
 
+WARNING! This program is an EARLY EARLY ALPHA stage, and probably does not offer any sort of security at all in its current state!! DO NOT use this in any sort of production enviroment. 
+
 
 ## Way way way safer than plain AES
 TFH makes it completely intractable to brute force decrypt the original file. As an example, if a malicious agent were to detect just 20 chunks (or 640 bytes) coming from your machine, it would know that <=10% (rounded up) of these are junk so the attacker would know that 18, 19 or all 20 of these chunks are real. In that case it would then have to check every subset of size 18, 19 or 20 and then every permutation of each of those subsets just to get to a point where AES decryption can be attempted. Even if the malicious agent could solve AES decryption in a tractable amount of time, they would have to make 20! + (20 Choose 19) *19! + (20 Choose 18) *18! ~= 6.0*10^18  different attempts to crack every possible combination so expected 3 * 10^18. So even if we make the absurd assumption that the attacker could crack an aes encrypted file in one second, it would still take 9.6*10^10 years or approximately 7 times the estimated age of the universe to crack. Remember this is just for ~700 bytes of data (it takes even longer as the file size grows)!
-
 
 ## Building and Running
 - `go install tin-foil-hat/tfh` to install the binary.
